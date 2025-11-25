@@ -16,7 +16,10 @@
           <input type="search" name="q" placeholder="Search by title, isbn, author" value="{{ q }}" />
           <input type="hidden" name="sort" value="{{ sort_by }}">
           <input type="hidden" name="order" value="{{ order }}">
-          <input type="hidden" name="scope" value="{{ scope }}">
+          <select name="scope" aria-label="Search scope">
+            <option value="books" {% if scope == 'books' %}selected{% endif %}>Books</option>
+            <option value="authors" {% if scope == 'authors' %}selected{% endif %}>Authors</option>
+          </select>
           <button title="Search"><i class="fa fa-search"></i></button>
           <a class="reset-link" href="{{ url_for('home') }}">Reset</a>
         </form>
