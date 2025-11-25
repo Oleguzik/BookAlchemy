@@ -25,6 +25,13 @@ flask db upgrade
 ```
 
 This ensures schema changes are tracked and applied reliably.
+### Book cover images
+
+You can provide a direct URL for a book cover by setting the `Cover URL` field when adding or editing a book from the UI.
+If a `cover_url` is present, the app will show that image. If `cover_url` is not provided, the app will fall back to the Open Library cover service based on the ISBN (if provided). If neither is available, no cover image will be displayed.
+
+To add fund of example cover URLs for seeded books, `data/seed_books.py` includes a few open library links for demo purposes.
+
 
 ### Setup script
 
