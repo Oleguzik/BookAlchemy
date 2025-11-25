@@ -38,6 +38,15 @@ if db is not None:
 	else:
 		migrate = None
 
+# Helpful runtime warning if Flask-Migrate isn't installed
+if Migrate is None:
+	# Prefer app.logger where available for visibility when Flask runs
+	try:
+		app.logger.warning("Flask-Migrate not installed - migrations disabled. Install Flask-Migrate or run 'bash bin/setup.sh' to enable migrations.")
+	except Exception:
+		# fallback to print for very early runtime
+		print("Warning: Flask-Migrate not installed - migrations disabled. Install Flask-Migrate or run 'bash bin/setup.sh' to enable migrations.")
+
 
 # Jinja filter to highlight keyword matches in results
 def highlight(text, q):
