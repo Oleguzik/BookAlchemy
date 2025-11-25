@@ -4,7 +4,12 @@ set -euo pipefail
 echo "Setting up BookAlchemy dev environment..."
 
 PYTHON=${PYTHON:-python3}
-VENV_DIR=venv
+# use .venv by default if present; otherwise `venv`
+VENV_DIR=${VENV_DIR:-.venv}
+if [ ! -d "$VENV_DIR" ]; then
+  # fallback to venv directory
+  VENV_DIR=venv
+fi
 
 if [ ! -d "$VENV_DIR" ]; then
   echo "Creating virtualenv at $VENV_DIR"

@@ -4,7 +4,10 @@ from markupsafe import Markup, escape
 import os
 
 from data_models import db, Author, Book
-from flask_migrate import Migrate
+try:
+	from flask_migrate import Migrate
+except Exception:
+	Migrate = None
 from datetime import datetime
 from sqlalchemy import or_, inspect
 import re
@@ -26,8 +29,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # If `db` was provided by data_models, initialize it with the Flask app
 if db is not None:
 	db.init_app(app)
-	# Initialize Flask-Migrate for migration support.
-	migrate = Migrate(app, db)
+	# Initialize Flask-Migrate for migration support if it's available.
+	if Migrate is not None:
+		try:
+			migrate = Migrate(app, db)
+		except Exception:
+			migrate = None
+	else:
+		migrate = None
 
 
 # Jinja filter to highlight keyword matches in results
