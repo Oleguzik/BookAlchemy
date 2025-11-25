@@ -31,6 +31,40 @@ You can provide a direct URL for a book cover by setting the `Cover URL` field w
 If a `cover_url` is present, the app will show that image. If `cover_url` is not provided, the app will fall back to the Open Library cover service based on the ISBN (if provided). If neither is available, no cover image will be displayed.
 
 To add fund of example cover URLs for seeded books, `data/seed_books.py` includes a few open library links for demo purposes.
+### Fixing the OperationalError: missing column (dev only)
+
+If you see an error like:
+
+```
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: book.cover_url
+```
+
+It means you've updated the model but your SQLite DB file has not been migrated. For development you have these options:
+
+- Easiest (safe for local development): run the small helper that adds the column (only if missing):
+
+```bash
+source .venv/bin/activate  # or `venv/bin/activate`
+python bin/ensure_cover_column.py
+```
+
+- Ideally: use Flask-Migrate (Alembic) to add migrations and apply them:
+
+```bash
+pip install Flask-Migrate
+export FLASK_APP=app.py
+flask db migrate -m "Add cover_url to Book"
+flask db upgrade
+```
+
+- If you don't care about existing data during development: drop and re-create the DB file + re-seed
+
+```bash
+python reset_db.py --force-kill --yes
+```
+
+Choose the option that matches your use case; the first helper is a lightweight option if you want to avoid using migrations while still preserving data.
+
 
 
 ### Setup script

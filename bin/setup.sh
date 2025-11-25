@@ -3,6 +3,11 @@ set -euo pipefail
 
 echo "Setting up BookAlchemy dev environment..."
 
+# Ensure we run from project root regardless of where bin/setup.sh is invoked
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+cd "$PROJECT_ROOT"
+
 PYTHON=${PYTHON:-python3}
 # use .venv by default if present; otherwise `venv`
 VENV_DIR=${VENV_DIR:-.venv}
@@ -25,8 +30,9 @@ echo "Initializing database..."
 python init_db.py
 
 echo "Seeding data..."
-python data/seed_authors.py
-python data/seed_books.py
+# Run seeders as modules so Python's import path includes project root
+python -m data.seed_authors
+python -m data.seed_books
 
 echo "Setup complete. To use the app:"
 echo "  source $VENV_DIR/bin/activate"

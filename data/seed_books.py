@@ -2,6 +2,11 @@
 
 This script is safe to run multiple times: it checks for existing ISBN/title before creating.
 """
+import sys, os
+# add project root to path so `from app import app` works when run via module or direct script
+proj_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if proj_root not in sys.path:
+    sys.path.insert(0, proj_root)
 from app import app
 from data_models import db, Author, Book
 
