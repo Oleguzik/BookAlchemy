@@ -5,3 +5,4 @@ Jinja2>=3.0
 # Optional dev/test packages
 pytest>=7.0
 python-dotenv>=0.21
+Flask-Migrate>=4.0

@@ -11,17 +11,18 @@
   {% block content %}
   <div class="card">
   <form action="/add_author" method="POST">
+  <input type="hidden" name="author_id" value="{{ author.id if author else '' }}" />
   <input type="hidden" name="sort" value="{{ sort }}">
   <input type="hidden" name="order" value="{{ order }}">
   <input type="hidden" name="q" value="{{ q }}">
   <label for="name">Author Name:</label> 
-  <input type="text" id="name" name="name" required><br><br>
+  <input type="text" id="name" name="name" value="{{ author.name if author else '' }}" required><br><br>
   
   <label for="birthdate">Birthdate:</label> 
-  <input type="date" id="birthdate" name="birthdate"><br><br> 
+  <input type="date" id="birthdate" name="birthdate" value="{{ author.birth_date if author and author.birth_date else '' }}"><br><br> 
   <label for="date_of_death">Date of Death:</label> 
-  <input type="date" id="date_of_death" name="date_of_death"><br><br>
-  <button class="btn" type="submit">➕ <i class="fa fa-user"></i> Add Author</button>
+  <input type="date" id="date_of_death" name="date_of_death" value="{{ author.date_of_death if author and author.date_of_death else '' }}"><br><br>
+  <button class="btn" type="submit">{{ 'Update Author' if author else '➕ Add Author' }} <i class="fa fa-user"></i></button>
   </form>
   <p><a href="{{ url_for('home', sort=sort, order=order, q=q) }}">Back to home</a></p>
   </div>

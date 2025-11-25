@@ -12,6 +12,7 @@ def create_schema():
     with app.app_context():
         db.create_all()
         print("Database schema created (tables should now exist).")
+        print("Note: For production or historic schema management, use Flask-Migrate and run `flask db init/migrate/upgrade` instead of `create_all()`.")
 
 
 if __name__ == '__main__':

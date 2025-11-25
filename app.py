@@ -1,9 +1,10 @@
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from markupsafe import Markup, escape
 import os
 
 from data_models import db, Author, Book
+from flask_migrate import Migrate
 from datetime import datetime
 from sqlalchemy import or_, inspect
 import re
@@ -11,6 +12,9 @@ import re
 
 # Create Flask application instance
 app = Flask(__name__)
+
+# For flash messages in dev, set a simple secret key (change for production!).
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-secret')
 
 # Use an absolute path for the SQLite file to avoid path issues with Flask
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -22,6 +26,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # If `db` was provided by data_models, initialize it with the Flask app
 if db is not None:
 	db.init_app(app)
+	# Initialize Flask-Migrate for migration support.
+	migrate = Migrate(app, db)
 
 
 # Jinja filter to highlight keyword matches in results
@@ -114,8 +120,10 @@ def home():
 
 	# Also query authors for display (we keep authors listing but not shown anymore per UI change)
 	authors = Author.query.order_by(Author.name).all()
+	total_authors = Author.query.count()
+	total_books = Book.query.count()
 	no_results = (len(books) == 0 and bool(q))
-	return render_template('home.html', books=books, authors=authors, sort_by=sort_by, order=order, q=q, no_results=no_results, scope=scope, authors_search=authors_search)
+	return render_template('home.html', books=books, authors=authors, sort_by=sort_by, order=order, q=q, no_results=no_results, scope=scope, authors_search=authors_search, total_authors=total_authors, total_books=total_books)
 
 
 @app.route('/add_author', methods=['GET', 'POST'])
@@ -125,6 +133,7 @@ def add_author():
 	order = request.args.get('order', request.form.get('order')) or 'asc'
 	q = request.args.get('q', request.form.get('q')) or ''
 
+	author_id = request.args.get('author_id') or request.form.get('author_id')
 	if request.method == 'POST':
 		name = request.form.get('name')
 		birthdate_str = request.form.get('birthdate')
@@ -138,14 +147,33 @@ def add_author():
 		birthdate = parse_date(birthdate_str)
 		date_of_death = parse_date(deathdate_str)
 
+		if author_id:
+			# Update existing
+			try:
+				author_id = int(author_id)
+				existing = Author.query.get(author_id)
+				if existing:
+					existing.name = name
+					existing.birth_date = birthdate
+					existing.date_of_death = date_of_death
+					db.session.commit()
+					return redirect(url_for('home', sort=sort_by, order=order, q=q, success='author_updated'))
+			except Exception:
+				pass
 		new_author = Author(name=name, birth_date=birthdate, date_of_death=date_of_death)
 		db.session.add(new_author)
 		db.session.commit()
 		# Redirect to home, preserving sort/order and showing a success flag
 		return redirect(url_for('home', sort=sort_by, order=order, q=q, success='author_added'))
 
-	# On GET, render add form. Pass sorting for sticky params.
-	return render_template('add_author.html', sort=sort_by, order=order, q=q)
+	# On GET, render add form. If editing, pass `author` to prefill form
+	author_obj = None
+	if author_id:
+		try:
+			author_obj = Author.query.get(int(author_id))
+		except Exception:
+			author_obj = None
+	return render_template('add_author.html', sort=sort_by, order=order, q=q, author=author_obj)
 
 
 @app.route('/add_book', methods=['GET', 'POST'])
@@ -156,6 +184,7 @@ def add_book():
 	q = request.args.get('q', request.form.get('q')) or ''
 	message = None
 	authors = Author.query.order_by(Author.name).all()
+	book_id = request.args.get('book_id') or request.form.get('book_id')
 	if request.method == 'POST':
 		isbn = request.form.get('isbn')
 		title = request.form.get('title')
@@ -169,12 +198,60 @@ def add_book():
 			pub_year = None
 			author_id = None
 
+		if book_id:
+			try:
+				book_id = int(book_id)
+				existing = Book.query.get(book_id)
+				if existing:
+					existing.isbn = isbn
+					existing.title = title
+					existing.publication_year = pub_year
+					existing.author_id = author_id
+					db.session.commit()
+					return redirect(url_for('home', sort=sort_by, order=order, q=q, success='book_updated'))
+			except Exception:
+				pass
 		new_book = Book(isbn=isbn, title=title, publication_year=pub_year, author_id=author_id)
 		db.session.add(new_book)
 		db.session.commit()
 		return redirect(url_for('home', sort=sort_by, order=order, q=q, success='book_added'))
 
-	return render_template('add_book.html', authors=authors, sort=sort_by, order=order, q=q)
+	# For GET, allow prefill if editing
+	book_obj = None
+	if book_id:
+		try:
+			book_obj = Book.query.get(int(book_id))
+		except Exception:
+			book_obj = None
+	return render_template('add_book.html', authors=authors, sort=sort_by, order=order, q=q, book=book_obj)
+
+
+@app.route('/admin')
+def admin():
+	# Test page that lists authors and books with controls for edit/delete
+	authors = Author.query.order_by(Author.name).all()
+	books = Book.query.order_by(Book.title).all()
+	return render_template('test_ui.html', authors=authors, books=books)
+
+
+@app.route('/admin/delete_author/<int:author_id>', methods=['POST'])
+def admin_delete_author(author_id):
+	a = Author.query.get_or_404(author_id)
+	# For safety in demo, cascade or reassign books will be blocked by FK constraints; we'll delete books first
+	Book.query.filter_by(author_id=author_id).delete()
+	db.session.delete(a)
+	db.session.commit()
+	flash('Author deleted', 'success')
+	return redirect(url_for('admin'))
+
+
+@app.route('/admin/delete_book/<int:book_id>', methods=['POST'])
+def admin_delete_book(book_id):
+	b = Book.query.get_or_404(book_id)
+	db.session.delete(b)
+	db.session.commit()
+	flash('Book deleted', 'success')
+	return redirect(url_for('admin'))
 
 
 if __name__ == '__main__':
