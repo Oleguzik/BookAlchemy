@@ -3,23 +3,27 @@ import os
 import pytest
 # Add project root to sys.path so `app` is importable
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from app import app
+from app import app as main_app
 from data_models import db, Author, Book
 
 
 @pytest.fixture
-def client():
-    # Use an in-memory SQLite DB to avoid touching the project DB
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    with app.app_context():
+def app():
+    from app import create_app
+    test_app = create_app({'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:'})
+    with test_app.app_context():
         db.create_all()
-        yield app.test_client()
+        yield test_app
         db.session.remove()
         db.drop_all()
 
 
-def test_admin_page_lists_authors_and_books(client):
+@pytest.fixture
+def client(app):
+    return app.test_client()
+
+
+def test_admin_page_lists_authors_and_books(client, app):
     with app.app_context():
         a = Author(name='Alice')
         db.session.add(a)
@@ -36,7 +40,7 @@ def test_admin_page_lists_authors_and_books(client):
         assert 'https://example.org/111.jpg' in body
 
 
-def test_admin_delete_book_and_author(client):
+def test_admin_delete_book_and_author(client, app):
     with app.app_context():
         a = Author(name='Bob')
         db.session.add(a)

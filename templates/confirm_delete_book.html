@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="layout">
+  <main class="main-col">
+    <div class="card" style="max-width: 500px; margin: 30px auto;">
+      <h2>⚠️ Delete Book</h2>
+      
+      <div style="background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px; margin-bottom: 16px;">
+        <p style="margin: 0; color: #856404;">
+          <strong>This is {{ author.name }}'s last book!</strong>
+        </p>
+        <p style="margin: 8px 0 0 0; color: #856404;">
+          After deleting "{{ book.title }}", this author will have no books in the library.
+        </p>
+      </div>
+
+      <p><strong>What would you like to do?</strong></p>
+
+      <form method="POST" style="margin-bottom: 16px;">
+        <div style="margin-bottom: 12px; padding: 12px; background-color: #f8f9fa; border-radius: 4px; border: 1px solid #e9ecef;">
+          <input type="radio" name="delete_author" value="no" id="keep_author" checked>
+          <label for="keep_author" style="cursor: pointer;">
+            <strong>Keep the author in the database</strong>
+            <p style="margin: 4px 0 0 0; color: #666; font-size: 13px;">
+              "{{ author.name }}" will remain in the system but with no books.
+            </p>
+          </label>
+        </div>
+
+        <div style="margin-bottom: 16px; padding: 12px; background-color: #f8f9fa; border-radius: 4px; border: 1px solid #e9ecef;">
+          <input type="radio" name="delete_author" value="yes" id="delete_author">
+          <label for="delete_author" style="cursor: pointer;">
+            <strong>Delete the author too</strong>
+            <p style="margin: 4px 0 0 0; color: #666; font-size: 13px;">
+              "{{ author.name }}" and "{{ book.title }}" will be permanently removed.
+            </p>
+          </label>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button type="submit" class="btn" style="background-color: #d9534f;">
+            <i class="fa fa-trash"></i> Delete Book
+          </button>
+          <a href="{{ url_for('home') }}" class="btn" style="background-color: #6c757d;">
+            <i class="fa fa-times"></i> Cancel
+          </a>
+        </div>
+      </form>
+
+      <hr style="margin: 16px 0;">
+      <p style="font-size: 12px; color: #666; margin: 0;">
+        <strong>Note:</strong> This action cannot be undone. Please choose carefully.
+      </p>
+    </div>
+  </main>
+</div>
+{% endblock %}

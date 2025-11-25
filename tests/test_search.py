@@ -3,23 +3,27 @@ import os
 import pytest
 # Add project root to sys.path so `app` is importable
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from app import app
+from app import app as main_app
 from data_models import db, Author, Book
 
 
 @pytest.fixture
-def client():
-    # Use an in-memory SQLite DB to avoid touching the project DB
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    with app.app_context():
+def app():
+    from app import create_app
+    test_app = create_app({'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:'})
+    with test_app.app_context():
         db.create_all()
-        yield app.test_client()
+        yield test_app
         db.session.remove()
         db.drop_all()
 
 
-def test_book_search(client):
+@pytest.fixture
+def client(app):
+    return app.test_client()
+
+
+def test_book_search(client, app):
     with app.app_context():
         # create author and book
         import uuid
@@ -43,7 +47,7 @@ def test_book_search(client):
         db.session.commit()
 
 
-def test_author_search_scope(client):
+def test_author_search_scope(client, app):
     with app.app_context():
         import uuid
         uid = uuid.uuid4().hex[:8]
@@ -60,7 +64,7 @@ def test_author_search_scope(client):
         db.session.commit()
 
 
-def test_book_cover_url_shows_in_home(client):
+def test_book_cover_url_shows_in_home(client, app):
     with app.app_context():
         import uuid
         uid = uuid.uuid4().hex[:8]

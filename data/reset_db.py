@@ -132,8 +132,8 @@ def recreate_schema(remove_file=False, drop_tables=True):
 
 def run_seed_scripts():
     try:
-        import seed_authors
-        import seed_books
+        import data.seed_authors as seed_authors
+        import data.seed_books as seed_books
         with app.app_context():
             seed_authors.seed_authors()
             seed_books.seed_books()

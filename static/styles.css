@@ -1,29 +1,247 @@
-/* Simple beginner-friendly styles */
-:root{ --bg:#f7f8fb; --card:#fff; --muted:#666; --accent:#2b6ef6; --danger:#e14} 
-body{ font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:#222; margin:0; }
-.container{ max-width:980px; margin:0 auto; padding:20px; }
-.site-header{ background:var(--card); border-bottom:1px solid #e6e8ec; padding:12px 0; position:sticky; top:0; z-index:10; }
-.brand{ display:inline-block; margin:0; font-size:18px; font-weight:700; color:var(--accent); }
-.global-search{ display:inline-flex; gap:8px; align-items:center; float:right; }
-.global-search select{ padding:8px 8px; border:1px solid #e6e8ec; border-radius:6px; }
-.global-search input[type=search]{ padding:8px 10px; border-radius:6px; border:1px solid #e6e8ec; min-width:230px; }
-.global-search button{ padding:8px 10px; border:none; background:var(--accent); color:white; border-radius:6px; cursor:pointer; }
-.reset-link{ margin-left:8px; color:var(--muted); font-size:13px; text-decoration:none; }
-.site-footer{ font-size:13px; color:var(--muted); padding:16px 0; }
-.layout{ display:flex; gap:24px; }
-.main-col{ flex:2; }
-.side-col{ flex:1; min-width:220px; }
-.card{ background:var(--card); border-radius:8px; padding:12px; box-shadow:0 1px 0 rgba(0,0,0,0.02); }
-.book-row{ display:flex; gap:16px; align-items:center; padding:10px 0; border-bottom:1px solid #f0f0f2; }
-.book-row:last-child{ border-bottom:none; }
-.book-cover{ width:72px; height:auto; border-radius:4px; }
-.title{ font-size:16px; margin:0; font-weight:600; }
-.meta{ color:var(--muted); font-size:13px; }
-mark.match{ background: #fffa8b; border-radius:2px; padding:0 2px; }
-.aside-links a{ display:block; text-decoration:none; margin-bottom:8px; color:var(--accent); }
-.sort-links a{ margin-right:12px; color:inherit; text-decoration:none; }
-.btn{ padding:8px 10px; border-radius:6px; border:none; cursor:pointer; }
-.btn.small{ padding:4px 6px; font-size:13px; border-radius:4px; }
+/* ========================================
+   BOOKALCHEMY STYLES - Main CSS for the app
+   ======================================== */
 
-/* Responsive */
-@media (max-width:700px){ .layout{ flex-direction:column; } .global-search{ float:none; margin-top:6px; } }
+/* COLOR VARIABLES - Define colors once, use everywhere */
+:root {
+  --bg: #f7f8fb;           /* Light background color */
+  --card: #fff;             /* White card background */
+  --muted: #666;            /* Gray text for secondary info */
+  --accent: #2b6ef6;        /* Blue for links and buttons */
+  --danger: #e14;           /* Red for delete buttons */
+}
+
+/* ========================================
+   GLOBAL STYLES - Applied to everything
+   ======================================== */
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background-color: var(--bg);
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ========================================
+   HEADER - Top navigation bar
+   ======================================== */
+
+.site-header {
+  background-color: var(--card);
+  border-bottom: 1px solid #e6e8ec;
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: inline-block;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* ========================================
+   SEARCH BOX - Global search bar
+   ======================================== */
+
+.global-search {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  float: right;
+}
+
+.global-search select {
+  padding: 8px 8px;
+  border: 1px solid #e6e8ec;
+  border-radius: 6px;
+}
+
+.global-search input[type=search] {
+  padding: 8px 10px;
+  border: 1px solid #e6e8ec;
+  border-radius: 6px;
+  min-width: 230px;
+}
+
+.global-search button {
+  padding: 8px 10px;
+  border: none;
+  background-color: var(--accent);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.reset-link {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+/* ========================================
+   LAYOUT - Main page structure
+   ======================================== */
+
+.layout {
+  display: flex;
+  gap: 24px;
+}
+
+.main-col {
+  flex: 2;  /* Takes 2 parts of space */
+}
+
+.side-col {
+  flex: 1;  /* Takes 1 part of space */
+  min-width: 220px;
+}
+
+/* ========================================
+   CARDS - Container boxes for content
+   ======================================== */
+
+.card {
+  background-color: var(--card);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+/* ========================================
+   BOOK ROWS - Individual book items
+   ======================================== */
+
+.book-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f2;
+}
+
+.book-row:last-child {
+  border-bottom: none;
+}
+
+.book-cover {
+  width: 72px;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* ========================================
+   TEXT STYLES
+   ======================================== */
+
+.title {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+mark.match {
+  background-color: #fffa8b;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* ========================================
+   BUTTONS & LINKS
+   ======================================== */
+
+.btn {
+  display: inline-block;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: var(--accent);
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.btn.small {
+  padding: 4px 6px;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+}
+
+.aside-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aside-links p {
+  margin: 0;
+}
+
+.aside-links a {
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.aside-links a.btn {
+  display: inline-block;
+  background-color: var(--accent);
+  color: white;
+  padding: 8px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.sort-links a {
+  margin-right: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.site-footer {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 16px 0;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - Mobile friendly
+   ======================================== */
+
+@media (max-width: 700px) {
+  /* Stack columns vertically on small screens */
+  .layout {
+    flex-direction: column;
+  }
+  
+  /* Move search to full width on mobile */
+  .global-search {
+    float: none;
+    margin-top: 6px;
+  }
+}
