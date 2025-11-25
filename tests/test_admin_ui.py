@@ -24,7 +24,7 @@ def test_admin_page_lists_authors_and_books(client):
         a = Author(name='Alice')
         db.session.add(a)
         db.session.commit()
-        b = Book(isbn='111', title='Alice Book', author_id=a.id)
+        b = Book(isbn='111', title='Alice Book', author_id=a.id, cover_url='https://example.org/111.jpg')
         db.session.add(b)
         db.session.commit()
 
@@ -33,6 +33,7 @@ def test_admin_page_lists_authors_and_books(client):
         body = rv.get_data(as_text=True)
         assert 'Alice' in body
         assert 'Alice Book' in body
+        assert 'https://example.org/111.jpg' in body
 
 
 def test_admin_delete_book_and_author(client):

@@ -58,3 +58,25 @@ def test_author_search_scope(client):
         # cleanup
         Author.query.filter_by(name=f'Search Author {uid}').delete()
         db.session.commit()
+
+
+def test_book_cover_url_shows_in_home(client):
+    with app.app_context():
+        import uuid
+        uid = uuid.uuid4().hex[:8]
+        a = Author(name=f'Cover Tester {uid}')
+        db.session.add(a)
+        db.session.commit()
+        cover = f'https://example.com/{uid}.jpg'
+        b = Book(isbn=uid, title=f'Cover Test {uid}', author_id=a.id, cover_url=cover)
+        db.session.add(b)
+        db.session.commit()
+
+        rv = client.get('/')
+        assert rv.status_code == 200
+        body = rv.get_data(as_text=True)
+        assert cover in body
+        # cleanup
+        Book.query.filter_by(isbn=uid).delete()
+        Author.query.filter_by(name=f'Cover Tester {uid}').delete()
+        db.session.commit()

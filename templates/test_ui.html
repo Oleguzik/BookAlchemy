@@ -28,6 +28,11 @@
         <ul>
         {% for b in books %}
           <li>
+            {% if b.cover_url %}
+              <img src="{{ b.cover_url }}" class="book-cover" style="width:48px; height:auto; vertical-align:middle; margin-right:8px;" />
+            {% elif b.isbn %}
+              <img src="https://covers.openlibrary.org/b/isbn/{{ b.isbn }}-S.jpg" class="book-cover" style="width:48px; height:auto; vertical-align:middle; margin-right:8px;" />
+            {% endif %}
             <strong>{{ b.title }}</strong> — {{ b.author.name if b.author else 'Unknown' }} <span class="meta">({{ b.publication_year or '?' }})</span>
             <form method="post" action="{{ url_for('admin_delete_book', book_id=b.id) }}" style="display:inline">
               <button class="btn small" type="submit" onclick="return confirm('Delete book?')">Delete</button>

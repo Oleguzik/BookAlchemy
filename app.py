@@ -198,6 +198,7 @@ def add_book():
 		isbn = request.form.get('isbn')
 		title = request.form.get('title')
 		pub_year = request.form.get('publication_year')
+		cover_url = request.form.get('cover_url')
 		author_id = request.form.get('author_id')
 
 		try:
@@ -215,12 +216,13 @@ def add_book():
 					existing.isbn = isbn
 					existing.title = title
 					existing.publication_year = pub_year
+					existing.cover_url = cover_url
 					existing.author_id = author_id
 					db.session.commit()
 					return redirect(url_for('home', sort=sort_by, order=order, q=q, success='book_updated'))
 			except Exception:
 				pass
-		new_book = Book(isbn=isbn, title=title, publication_year=pub_year, author_id=author_id)
+		new_book = Book(isbn=isbn, title=title, publication_year=pub_year, author_id=author_id, cover_url=cover_url)
 		db.session.add(new_book)
 		db.session.commit()
 		return redirect(url_for('home', sort=sort_by, order=order, q=q, success='book_added'))

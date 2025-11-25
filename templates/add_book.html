@@ -29,6 +29,9 @@
     <label for="publication_year">Publication Year:</label>
     <input type="number" id="publication_year" name="publication_year" value="{{ book.publication_year if book and book.publication_year else '' }}"><br><br>
 
+    <label for="cover_url">Cover URL (optional):</label>
+    <input type="url" id="cover_url" name="cover_url" value="{{ book.cover_url if book else '' }}" placeholder="https://example.com/cover.jpg"><br><br>
+
     <label for="author_id">Author:</label>
     <select id="author_id" name="author_id" required>
       <option value="">Select an author</option>

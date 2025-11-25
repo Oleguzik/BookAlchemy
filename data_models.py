@@ -39,6 +39,8 @@ class Book(db.Model):
 	isbn = db.Column(db.String(20), unique=True, nullable=False)
 	title = db.Column(db.String(200), nullable=False)
 	publication_year = db.Column(db.Integer, nullable=True)
+    # Optional direct link to a cover image (e.g., hosted image URL)
+	cover_url = db.Column(db.String(512), nullable=True)
 	author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
 
 	# relationship to Author. backref creates .books on Author instances.

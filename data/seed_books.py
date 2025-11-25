@@ -6,11 +6,11 @@ from app import app
 from data_models import db, Author, Book
 
 SAMPLE_BOOKS = [
-    ("Jane Austen", "9780141439518", "Pride and Prejudice", 1813),
-    ("Charles Dickens", "9780141439563", "Great Expectations", 1861),
+    ("Jane Austen", "9780141439518", "Pride and Prejudice", 1813, "https://covers.openlibrary.org/b/isbn/9780141439518-M.jpg"),
+    ("Charles Dickens", "9780141439563", "Great Expectations", 1861, "https://covers.openlibrary.org/b/isbn/9780141439563-M.jpg"),
     ("Mark Twain", "9780141439648", "Adventures of Huckleberry Finn", 1884),
     ("Virginia Woolf", "9780156907392", "Mrs Dalloway", 1925),
-    ("George Orwell", "9780451524935", "1984", 1949),
+    ("George Orwell", "9780451524935", "1984", 1949, "https://covers.openlibrary.org/b/isbn/9780451524935-M.jpg"),
     ("Harper Lee", "9780061120084", "To Kill a Mockingbird", 1960),
     ("J.K. Rowling", "9780747532743", "Harry Potter and the Philosopher's Stone", 1997),
     ("Toni Morrison", "9780307277671", "Beloved", 1987),
@@ -21,7 +21,13 @@ SAMPLE_BOOKS = [
 
 def seed_books():
     with app.app_context():
-        for author_name, isbn, title, year in SAMPLE_BOOKS:
+        for item in SAMPLE_BOOKS:
+            # support both 4-tuple and 5-tuple entries (with optional cover_url)
+            if len(item) == 5:
+                author_name, isbn, title, year, cover_url = item
+            else:
+                author_name, isbn, title, year = item
+                cover_url = None
             # find author by name
             author = Author.query.filter_by(name=author_name).first()
             if not author:
@@ -32,7 +38,7 @@ def seed_books():
             if existing:
                 print(f"Skipping existing book: {title} (isbn {isbn})")
                 continue
-            b = Book(isbn=isbn, title=title, publication_year=year, author_id=author.id)
+            b = Book(isbn=isbn, title=title, publication_year=year, author_id=author.id, cover_url=cover_url)
             db.session.add(b)
         db.session.commit()
         print("Book seeding completed.")

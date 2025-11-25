@@ -38,8 +38,10 @@
         {% else %}
           {% for book in books %}
       <div class="book-row">
-      {% if book.isbn %}
-      <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg" alt="cover" style="width:72px; height:auto;" onerror="this.style.display='none'" />
+      {% if book.cover_url %}
+      <img src="{{ book.cover_url }}" alt="cover" class="book-cover" style="width:72px; height:auto;" onerror="this.style.display='none'" />
+      {% elif book.isbn %}
+      <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg" alt="cover" class="book-cover" style="width:72px; height:auto;" onerror="this.style.display='none'" />
       {% endif %}
       <div>
         <h3 class="title">{{ book.title | highlight(q) }}</h3>
