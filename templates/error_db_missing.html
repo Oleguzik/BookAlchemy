@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+  <h2>Database schema not initialized</h2>
+  <p>It looks like the application's database schema is missing or empty. To continue, create the required tables.</p>
+  <p>Quick options:</p>
+  <ol>
+    <li>Run the initialization script: <code>python init_db.py</code></li>
+    <li>Or run the SQLALCHEMY create: <code>python -c "from app import app; from data_models import db; with app.app_context(): db.create_all()"</code></li>
+  </ol>
+  <p>If you prefer a migration workflow, consider using <code>Flask-Migrate</code> instead.</p>
+  <p>Missing information: <strong>{{ missing }}</strong></p>
+  <p><a href="/">Back</a></p>
+</div>
+{% endblock %}

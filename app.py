@@ -5,7 +5,7 @@ import os
 
 from data_models import db, Author, Book
 from datetime import datetime
-from sqlalchemy import or_
+from sqlalchemy import or_, inspect
 import re
 
 
@@ -38,6 +38,30 @@ def highlight(text, q):
 
 
 app.jinja_env.filters['highlight'] = highlight
+
+
+def check_db_tables(required_tables=None):
+	"""Return (ok, missing) where ok is True if every required table is present.
+
+	This function uses SQLAlchemy's inspector to check the presence of the tables.
+	"""
+	if required_tables is None:
+		required_tables = ['author', 'book']
+	try:
+		inspector = inspect(db.engine)
+		missing = [t for t in required_tables if not inspector.has_table(t)]
+		return (len(missing) == 0, missing)
+	except Exception as exc:
+		# If the DB engine can't be connected, report the error message as missing info
+		return (False, [str(exc)])
+
+
+@app.before_request
+def ensure_db_schema():
+	ok, missing = check_db_tables()
+	if not ok:
+		# Return a friendly page explaining how to initialize the DB
+		return render_template('error_db_missing.html', missing=missing), 503
 
 
 @app.route('/')

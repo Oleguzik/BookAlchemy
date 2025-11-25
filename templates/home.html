@@ -22,8 +22,8 @@
         <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
         </div>
         <div style="display:flex; gap:24px; align-items:center; margin-bottom:8px;">
-          <a href="{{ url_for('home', sort='title', order=('desc' if sort_by == 'title' and order == 'asc' else 'asc')) }}" style="text-decoration:none; font-weight:bold;">📚 Title {% if sort_by == 'title' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
-          <a href="{{ url_for('home', sort='author', order=('desc' if sort_by == 'author' and order == 'asc' else 'asc')) }}" style="text-decoration:none; font-weight:bold;">👤 Author {% if sort_by == 'author' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
+          <a href="{{ url_for('home', sort='title', order=('desc' if sort_by == 'title' and order == 'asc' else 'asc'), q=q, scope=scope) }}" style="text-decoration:none; font-weight:bold;">📚 Title {% if sort_by == 'title' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
+          <a href="{{ url_for('home', sort='author', order=('desc' if sort_by == 'author' and order == 'asc' else 'asc'), q=q, scope=scope) }}" style="text-decoration:none; font-weight:bold;">👤 Author {% if sort_by == 'author' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
         </div>
         {% if q and scope == 'authors' and authors_search|length == 0 %}
           <p class="meta" style="color:#a00">No books found for "{{ q }}"</p>
