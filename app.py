@@ -4,6 +4,7 @@ import os
 
 from data_models import db, Author, Book
 from datetime import datetime
+from sqlalchemy import or_
 
 
 # Create Flask application instance
@@ -26,24 +27,42 @@ def home():
 	# Query all books and pass to the template. The Book model includes a
 	# relationship to Author so we can access book.author.name directly.
 	# Allow sorting through query parameters: sort=title|author and order=asc|desc
+	# Also support keyword search via `q` query param (search title, isbn, author name)
+	q = request.args.get('q', '').strip()
 	sort_by = request.args.get('sort', 'title')
 	order = request.args.get('order', 'asc')
 
+	# Build the base query
+	query = Book.query
+
+	# If a search term is provided, filter books by title, isbn, or author name
+	if q:
+		# join Author so we can search against author.name as well
+		query = query.join(Author).filter(
+			or_(Book.title.ilike(f"%{q}%"), Book.isbn.ilike(f"%{q}%"), Author.name.ilike(f"%{q}%"))
+		)
+
+	# Apply ordering after filtering
 	if sort_by == 'author':
 		# join Author and order by author's name
+		query = query.join(Author)
 		if order == 'desc':
-			books = Book.query.join(Author).order_by(Author.name.desc()).all()
+			query = query.order_by(Author.name.desc())
 		else:
-			books = Book.query.join(Author).order_by(Author.name).all()
+			query = query.order_by(Author.name)
 	else:
 		# default to ordering by title
 		if order == 'desc':
-			books = Book.query.order_by(Book.title.desc()).all()
+			query = query.order_by(Book.title.desc())
 		else:
-			books = Book.query.order_by(Book.title).all()
-	# Also query authors for display
+			query = query.order_by(Book.title)
+	# Fetch results
+	books = query.all()
+
+	# Also query authors for display (we keep authors listing but not shown anymore per UI change)
 	authors = Author.query.order_by(Author.name).all()
-	return render_template('home.html', books=books, authors=authors, sort_by=sort_by, order=order)
+	no_results = (len(books) == 0 and bool(q))
+	return render_template('home.html', books=books, authors=authors, sort_by=sort_by, order=order, q=q, no_results=no_results)
 
 
 @app.route('/add_author', methods=['GET', 'POST'])
@@ -51,6 +70,7 @@ def add_author():
 	# Preserve current sorting when navigating from home
 	sort_by = request.args.get('sort', request.form.get('sort')) or 'title'
 	order = request.args.get('order', request.form.get('order')) or 'asc'
+	q = request.args.get('q', request.form.get('q')) or ''
 
 	if request.method == 'POST':
 		name = request.form.get('name')
@@ -69,10 +89,10 @@ def add_author():
 		db.session.add(new_author)
 		db.session.commit()
 		# Redirect to home, preserving sort/order and showing a success flag
-		return redirect(url_for('home', sort=sort_by, order=order, success='author_added'))
+		return redirect(url_for('home', sort=sort_by, order=order, q=q, success='author_added'))
 
 	# On GET, render add form. Pass sorting for sticky params.
-	return render_template('add_author.html', sort=sort_by, order=order)
+	return render_template('add_author.html', sort=sort_by, order=order, q=q)
 
 
 @app.route('/add_book', methods=['GET', 'POST'])
@@ -80,6 +100,7 @@ def add_book():
 	# Provide list of authors for the dropdown and keep any sorting state
 	sort_by = request.args.get('sort', request.form.get('sort')) or 'title'
 	order = request.args.get('order', request.form.get('order')) or 'asc'
+	q = request.args.get('q', request.form.get('q')) or ''
 	message = None
 	authors = Author.query.order_by(Author.name).all()
 	if request.method == 'POST':
@@ -98,9 +119,9 @@ def add_book():
 		new_book = Book(isbn=isbn, title=title, publication_year=pub_year, author_id=author_id)
 		db.session.add(new_book)
 		db.session.commit()
-		return redirect(url_for('home', sort=sort_by, order=order, success='book_added'))
+		return redirect(url_for('home', sort=sort_by, order=order, q=q, success='book_added'))
 
-	return render_template('add_book.html', authors=authors, sort=sort_by, order=order)
+	return render_template('add_book.html', authors=authors, sort=sort_by, order=order, q=q)
 
 
 if __name__ == '__main__':

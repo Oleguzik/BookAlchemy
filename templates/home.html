@@ -10,16 +10,33 @@
     <div style="display:flex; gap:32px; align-items:flex-start;">
       <section style="flex: 2;">
         <h2>Books</h2>
+        <!-- Search form (preserves sort and order using hidden fields) -->
+        <form method="GET" action="/" style="margin-bottom: 12px; display:flex; gap:8px; align-items:center;">
+          <input type="hidden" name="sort" value="{{ sort_by }}">
+          <input type="hidden" name="order" value="{{ order }}">
+          <input type="search" name="q" value="{{ q }}" placeholder="Search by title, isbn, author" style="min-width: 240px;" />
+          <button type="submit">🔎 Search</button>
+          {% if q %}<a href="{{ url_for('home', sort=sort_by, order=order) }}">Clear</a>{% endif %}
+        </form>
         <!-- Sorting is provided via the clickable headers below (Title / Author). -->
         {# Show success message from redirects, e.g., 'author_added' or 'book_added' #}
         {% if request.args.get('success') %}
           <p style="color:green; margin:8px 0;">{% if request.args.get('success') == 'author_added' %}Author added successfully.{% elif request.args.get('success') == 'book_added' %}Book added successfully.{% else %}Operation completed successfully.{% endif %}</p>
         {% endif %}
         {# Clickable column headers that toggle sort direction. Using emojis as icons. #}
+        <!-- Empty spacer for header controls -->
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+        </div>
         <div style="display:flex; gap:24px; align-items:center; margin-bottom:8px;">
           <a href="{{ url_for('home', sort='title', order=('desc' if sort_by == 'title' and order == 'asc' else 'asc')) }}" style="text-decoration:none; font-weight:bold;">📚 Title {% if sort_by == 'title' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
           <a href="{{ url_for('home', sort='author', order=('desc' if sort_by == 'author' and order == 'asc' else 'asc')) }}" style="text-decoration:none; font-weight:bold;">👤 Author {% if sort_by == 'author' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
         </div>
+        {% if q and books|length == 0 %}
+          <p style="color:#a00">No books found for "{{ q }}"</p>
+        {% elif q %}
+          <p style="color:green">Found {{ books|length }} result{{ 's' if books|length != 1 }} for "{{ q }}"</p>
+        {% endif %}
+        {# no_results text removed to avoid duplication (we show 'Found X results' or clear message above) #}
         {% for book in books %}
     <div style="display:flex; align-items:center; gap: 16px; margin-bottom: 16px;">
       {% if book.isbn %}
@@ -35,8 +52,8 @@
 
       <aside style="flex: 1; border-left: 1px solid #ddd; padding-left: 16px;">
         <div style="display:flex; flex-direction:column; gap:8px;">
-          <p style="margin:0"><a href="{{ url_for('add_author', sort=sort_by, order=order) }}">➕👤 Add Author</a></p>
-          <p style="margin:0"><a href="{{ url_for('add_book', sort=sort_by, order=order) }}">➕📚 Add Book</a></p>
+          <p style="margin:0"><a href="{{ url_for('add_author', sort=sort_by, order=order, q=q) }}">➕👤 Add Author</a></p>
+          <p style="margin:0"><a href="{{ url_for('add_book', sort=sort_by, order=order, q=q) }}">➕📚 Add Book</a></p>
         </div>
       </aside>
     </div>
