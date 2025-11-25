@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  </head>
+  <body>
+
+    <div style="display:flex; gap:32px; align-items:flex-start;">
+      <section style="flex: 2;">
+        <h2>Books</h2>
+        <!-- Sorting is provided via the clickable headers below (Title / Author). -->
+        {# Show success message from redirects, e.g., 'author_added' or 'book_added' #}
+        {% if request.args.get('success') %}
+          <p style="color:green; margin:8px 0;">{% if request.args.get('success') == 'author_added' %}Author added successfully.{% elif request.args.get('success') == 'book_added' %}Book added successfully.{% else %}Operation completed successfully.{% endif %}</p>
+        {% endif %}
+        {# Clickable column headers that toggle sort direction. Using emojis as icons. #}
+        <div style="display:flex; gap:24px; align-items:center; margin-bottom:8px;">
+          <a href="{{ url_for('home', sort='title', order=('desc' if sort_by == 'title' and order == 'asc' else 'asc')) }}" style="text-decoration:none; font-weight:bold;">📚 Title {% if sort_by == 'title' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
+          <a href="{{ url_for('home', sort='author', order=('desc' if sort_by == 'author' and order == 'asc' else 'asc')) }}" style="text-decoration:none; font-weight:bold;">👤 Author {% if sort_by == 'author' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
+        </div>
+        {% for book in books %}
+    <div style="display:flex; align-items:center; gap: 16px; margin-bottom: 16px;">
+      {% if book.isbn %}
+      <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg" alt="cover" style="width:72px; height:auto;" onerror="this.style.display='none'" />
+      {% endif %}
+      <div>
+        <h3 style="margin:0">{{ book.title }}</h3>
+        <p style="margin:0">by {{ book.author.name if book.author else 'Unknown' }}</p>
+      </div>
+    </div>
+        {% endfor %}
+      </section>
+
+      <aside style="flex: 1; border-left: 1px solid #ddd; padding-left: 16px;">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <p style="margin:0"><a href="{{ url_for('add_author', sort=sort_by, order=order) }}">➕👤 Add Author</a></p>
+          <p style="margin:0"><a href="{{ url_for('add_book', sort=sort_by, order=order) }}">➕📚 Add Book</a></p>
+        </div>
+      </aside>
+    </div>
+
+  </body>
+</html>

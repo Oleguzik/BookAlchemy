@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  </head>
+  <body>
+
+  {% if message %}
+  <p style="color:green">{{ message }}</p>
+  {% endif %}
+  <form action="/add_book" method="POST">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="order" value="{{ order }}">
+    <label for="isbn">ISBN:</label>
+    <input type="text" id="isbn" name="isbn" required><br><br>
+
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" required><br><br>
+
+    <label for="publication_year">Publication Year:</label>
+    <input type="number" id="publication_year" name="publication_year"><br><br>
+
+    <label for="author_id">Author:</label>
+    <select id="author_id" name="author_id" required>
+      <option value="">Select an author</option>
+      {% for a in authors %}
+      <option value="{{ a.id }}">{{ a.name }}</option>
+      {% endfor %}
+    </select>
+    <br><br>
+    <button type="submit">➕📚 Add Book</button>
+  </form>
+  <p><a href="{{ url_for('home', sort=sort, order=order) }}">Back to home</a></p>
+
+  </body>
+</html>
