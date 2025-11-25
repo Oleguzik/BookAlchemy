@@ -11,8 +11,6 @@
   <input type="hidden" name="sort" value="{{ sort }}">
   <input type="hidden" name="order" value="{{ order }}">
   <input type="hidden" name="q" value="{{ q }}">
-  <input type="hidden" name="q" value="{{ q }}">
-  <input type="hidden" name="q" value="{{ q }}">
   <label for="name">Author Name:</label> 
   <input type="text" id="name" name="name" required><br><br>
   
@@ -22,7 +20,7 @@
   <input type="date" id="date_of_death" name="date_of_death"><br><br>
   <button type="submit">➕👤 Add Author</button>
   </form>
-  <p><a href="{{ url_for('home', sort=sort, order=order) }}">Back to home</a></p>
+  <p><a href="{{ url_for('home', sort=sort, order=order, q=q) }}">Back to home</a></p>
 
   </body>
 </html>
