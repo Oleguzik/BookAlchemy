@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  </head>
-  <body>
-
-    <div style="display:flex; gap:32px; align-items:flex-start;">
-      <section style="flex: 2;">
-        <h2>Books</h2>
+{% extends 'base.html' %}
+{% block content %}
+<div class="layout">
+  <main class="main-col">
+    <div class="card">
+      <h2>Books</h2>
         <!-- Search form (preserves sort and order using hidden fields) -->
         <form method="GET" action="/" style="margin-bottom: 12px; display:flex; gap:8px; align-items:center;">
           <input type="hidden" name="sort" value="{{ sort_by }}">
@@ -31,32 +25,48 @@
           <a href="{{ url_for('home', sort='title', order=('desc' if sort_by == 'title' and order == 'asc' else 'asc')) }}" style="text-decoration:none; font-weight:bold;">📚 Title {% if sort_by == 'title' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
           <a href="{{ url_for('home', sort='author', order=('desc' if sort_by == 'author' and order == 'asc' else 'asc')) }}" style="text-decoration:none; font-weight:bold;">👤 Author {% if sort_by == 'author' %}{% if order=='asc' %}&#9650;{% else %}&#9660;{% endif %}{% endif %}</a>
         </div>
-        {% if q and books|length == 0 %}
-          <p style="color:#a00">No books found for "{{ q }}"</p>
+        {% if q and scope == 'authors' and authors_search|length == 0 %}
+          <p class="meta" style="color:#a00">No books found for "{{ q }}"</p>
+        {% elif q and scope == 'authors' %}
+          <p class="meta" style="color:green">Found {{ authors_search|length }} author{{ 's' if authors_search|length != 1 }} for "{{ q }}"</p>
         {% elif q %}
-          <p style="color:green">Found {{ books|length }} result{{ 's' if books|length != 1 }} for "{{ q }}"</p>
+          <p class="meta" style="color:green">Found {{ books|length }} result{{ 's' if books|length != 1 }} for "{{ q }}"</p>
         {% endif %}
         {# no_results text removed to avoid duplication (we show 'Found X results' or clear message above) #}
-        {% for book in books %}
-    <div style="display:flex; align-items:center; gap: 16px; margin-bottom: 16px;">
+        {% if scope == 'authors' and authors_search %}
+          {% for author in authors_search %}
+            <div class="book-row">
+              <div>
+                <h3 class="title">{{ author.name | highlight(q) }}</h3>
+                <p class="meta">{{ author.birth_date or '' }} {% if author.date_of_death %}– {{ author.date_of_death }}{% endif %}</p>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          {% for book in books %}
+      <div class="book-row">
       {% if book.isbn %}
       <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg" alt="cover" style="width:72px; height:auto;" onerror="this.style.display='none'" />
       {% endif %}
       <div>
-        <h3 style="margin:0">{{ book.title }}</h3>
-        <p style="margin:0">by {{ book.author.name if book.author else 'Unknown' }}</p>
+        <h3 class="title">{{ book.title | highlight(q) }}</h3>
+        <p class="meta">by {{ (book.author.name if book.author else 'Unknown') | highlight(q) }}</p>
       </div>
     </div>
-        {% endfor %}
-      </section>
-
-      <aside style="flex: 1; border-left: 1px solid #ddd; padding-left: 16px;">
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <p style="margin:0"><a href="{{ url_for('add_author', sort=sort_by, order=order, q=q) }}">➕👤 Add Author</a></p>
-          <p style="margin:0"><a href="{{ url_for('add_book', sort=sort_by, order=order, q=q) }}">➕📚 Add Book</a></p>
-        </div>
-      </aside>
+          {% endfor %}
+        {% endif %}
     </div>
+  </main>
+
+  <aside class="side-col">
+    <div class="card aside-links">
+      <p><a href="{{ url_for('add_author', sort=sort_by, order=order, q=q) }}">➕ <i class="fa fa-user"></i> Add Author</a></p>
+      <p><a href="{{ url_for('add_book', sort=sort_by, order=order, q=q) }}">➕ <i class="fa fa-book"></i> Add Book</a></p>
+      <p class="meta"><a href="{{ url_for('home', sort=sort_by, order=order) }}">View All</a></p>
+    </div>
+  </aside>
+</div>
+{% endblock %}
 
   </body>
 </html>

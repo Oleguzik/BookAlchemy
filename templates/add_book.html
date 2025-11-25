@@ -10,6 +10,9 @@
   {% if message %}
   <p style="color:green">{{ message }}</p>
   {% endif %}
+  {% extends 'base.html' %}
+  {% block content %}
+  <div class="card">
   <form action="/add_book" method="POST">
     <input type="hidden" name="sort" value="{{ sort }}">
     <input type="hidden" name="order" value="{{ order }}">
@@ -33,9 +36,11 @@
       {% endfor %}
     </select>
     <br><br>
-    <button type="submit">➕📚 Add Book</button>
+    <button class="btn" type="submit">➕ <i class="fa fa-book"></i> Add Book</button>
   </form>
   <p><a href="{{ url_for('home', sort=sort, order=order, q=q) }}">Back to home</a></p>
+  </div>
+  {% endblock %}
 
   </body>
 </html>

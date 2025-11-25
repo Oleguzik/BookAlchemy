@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BookAlchemy</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <!-- Font Awesome Free CDN (simple icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-yc6+0f..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1 class="brand">BookAlchemy</h1>
+        <form class="global-search" method="GET" action="/">
+          <input type="search" name="q" placeholder="Search by title, isbn, author" value="{{ q }}" />
+          <input type="hidden" name="sort" value="{{ sort_by }}">
+          <input type="hidden" name="order" value="{{ order }}">
+          <input type="hidden" name="scope" value="{{ scope }}">
+          <button title="Search"><i class="fa fa-search"></i></button>
+          <a class="reset-link" href="{{ url_for('home') }}">Reset</a>
+        </form>
+      </div>
+    </header>
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer container">BookAlchemy — Demo</footer>
+  </body>
+  </html>

@@ -1,10 +1,12 @@
 
 from flask import Flask, render_template, request, redirect, url_for
+from markupsafe import Markup, escape
 import os
 
 from data_models import db, Author, Book
 from datetime import datetime
 from sqlalchemy import or_
+import re
 
 
 # Create Flask application instance
@@ -22,6 +24,22 @@ if db is not None:
 	db.init_app(app)
 
 
+# Jinja filter to highlight keyword matches in results
+def highlight(text, q):
+	if not q or not text:
+		return text
+	# escape q for regex and do case-insensitive replacement, wrap in <mark>
+	try:
+		pat = re.compile(re.escape(q), re.IGNORECASE)
+		esc = escape
+		return Markup(pat.sub(lambda m: f"<mark class=\"match\">{esc(m.group(0))}</mark>", esc(text)))
+	except Exception:
+		return text
+
+
+app.jinja_env.filters['highlight'] = highlight
+
+
 @app.route('/')
 def home():
 	# Query all books and pass to the template. The Book model includes a
@@ -29,18 +47,23 @@ def home():
 	# Allow sorting through query parameters: sort=title|author and order=asc|desc
 	# Also support keyword search via `q` query param (search title, isbn, author name)
 	q = request.args.get('q', '').strip()
+	scope = request.args.get('scope', request.args.get('scope', 'books'))
 	sort_by = request.args.get('sort', 'title')
 	order = request.args.get('order', 'asc')
 
 	# Build the base query
 	query = Book.query
 
-	# If a search term is provided, filter books by title, isbn, or author name
+	# If a search term is provided, filter books or authors depending on scope
 	if q:
-		# join Author so we can search against author.name as well
-		query = query.join(Author).filter(
-			or_(Book.title.ilike(f"%{q}%"), Book.isbn.ilike(f"%{q}%"), Author.name.ilike(f"%{q}%"))
-		)
+		if scope == 'authors':
+			# we will handle author results separately
+			author_results = Author.query.filter(Author.name.ilike(f"%{q}%")).order_by(Author.name).all()
+		else:
+			# join Author so we can search against author.name as well
+			query = query.join(Author).filter(
+				or_(Book.title.ilike(f"%{q}%"), Book.isbn.ilike(f"%{q}%"), Author.name.ilike(f"%{q}%"))
+			)
 
 	# Apply ordering after filtering
 	if sort_by == 'author':
@@ -58,11 +81,17 @@ def home():
 			query = query.order_by(Book.title)
 	# Fetch results
 	books = query.all()
+	if q and scope == 'authors':
+		# when searching authors only, clear books and have authors_search set
+		books = []
+		authors_search = author_results
+	else:
+		authors_search = []
 
 	# Also query authors for display (we keep authors listing but not shown anymore per UI change)
 	authors = Author.query.order_by(Author.name).all()
 	no_results = (len(books) == 0 and bool(q))
-	return render_template('home.html', books=books, authors=authors, sort_by=sort_by, order=order, q=q, no_results=no_results)
+	return render_template('home.html', books=books, authors=authors, sort_by=sort_by, order=order, q=q, no_results=no_results, scope=scope, authors_search=authors_search)
 
 
 @app.route('/add_author', methods=['GET', 'POST'])
