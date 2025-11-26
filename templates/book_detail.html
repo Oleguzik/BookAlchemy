@@ -66,6 +66,36 @@
                   {% endif %}
                 </div>
               </div>
+
+              <!-- AI Review Section -->
+              <div>
+                <p style="margin: 0; color: #666; font-size: 12px; font-weight: bold; text-transform: uppercase;">AI Review</p>
+                <div style="margin: 8px 0 0 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                  {% if book.ai_recommendation %}
+                    <span style="display: inline-block; background-color: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                      <i class="fa fa-check-circle"></i> Generated
+                    </span>
+                    <a href="{{ url_for('recommend') }}" class="btn" style="background-color: #2196F3; color: white; padding: 4px 12px; font-size: 12px; text-decoration: none; display: inline-block;">
+                      <i class="fa fa-eye"></i> View
+                    </a>
+                    <button type="button" class="btn edit-ai-review-btn" data-book-id="{{ book.id }}" style="background-color: #ff9800; color: white; padding: 4px 12px; font-size: 12px;">
+                      <i class="fa fa-edit"></i> Edit
+                    </button>
+                    <form method="post" action="{{ url_for('ai_review_book', book_id=book.id) }}" style="display: inline;" class="ai-review-form-detail">
+                      <button type="submit" class="btn" style="background-color: #2196F3; color: white; padding: 4px 12px; font-size: 12px;">
+                        <i class="fa fa-refresh"></i> Refresh
+                      </button>
+                    </form>
+                  {% else %}
+                    <span style="color: #999; font-style: italic;">No review yet</span>
+                    <form method="post" action="{{ url_for('ai_review_book', book_id=book.id) }}" style="display: inline;" class="ai-review-form-detail">
+                      <button type="submit" class="btn" style="background-color: #4CAF50; color: white; padding: 4px 12px; font-size: 12px;">
+                        <i class="fa fa-magic"></i> Generate
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
+              </div>
             
             </div>
           </div>
@@ -182,6 +212,45 @@
   </div>
 </div>
 
+<!-- AI Review Edit Modal -->
+<div id="editAIReviewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+    <h2 style="margin: 0 0 16px 0; color: #333;">Edit AI Review</h2>
+    <form id="editAIReviewForm" method="post" action="">
+      <div style="margin-bottom: 16px;">
+        <label for="aiReviewText" style="display: block; margin-bottom: 8px; font-weight: bold;">Review Content:</label>
+        <textarea id="aiReviewText" name="ai_recommendation" style="width: 100%; height: 300px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 14px; resize: vertical;"></textarea>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="btn" style="background-color: #4CAF50; color: white; padding: 10px 16px; border-radius: 4px; border: none; cursor: pointer; flex: 1;">
+          <i class="fa fa-save"></i> Save Changes
+        </button>
+        <button type="button" class="btn" onclick="closeAIReviewModal()" style="background-color: #6c757d; color: white; padding: 10px 16px; border-radius: 4px; border: none; cursor: pointer; flex: 1;">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Loading Modal -->
+<div id="loadingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+    <div style="margin-bottom: 20px;">
+      <div style="width: 60px; height: 60px; margin: 0 auto; border: 4px solid #f3f3f3; border-top: 4px solid #2196F3; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    </div>
+    <h2 style="margin: 0 0 8px 0; color: #333; font-size: 20px;">Generating AI Review</h2>
+    <p style="margin: 0; color: #666; font-size: 14px;">Please wait while we fetch the review from GPT...</p>
+  </div>
+</div>
+
+<style>
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+
 <script>
   function toggleRatingEditor() {
     const modal = document.getElementById('ratingEditorModal');
@@ -191,6 +260,33 @@
       modal.style.display = 'none';
     }
   }
+
+  function closeAIReviewModal() {
+    document.getElementById('editAIReviewModal').style.display = 'none';
+  }
+
+  // Edit AI Review button
+  const editAIReviewBtn = document.querySelector('.edit-ai-review-btn');
+  if (editAIReviewBtn) {
+    editAIReviewBtn.addEventListener('click', function() {
+      const bookId = this.dataset.bookId;
+      const reviewText = '{{ book.ai_recommendation }}';
+      
+      const form = document.getElementById('editAIReviewForm');
+      form.action = '/book/' + bookId + '/edit_review';
+      document.getElementById('aiReviewText').value = reviewText;
+      
+      document.getElementById('editAIReviewModal').style.display = 'flex';
+    });
+  }
+
+  // Loading indicator for AI generation
+  document.querySelectorAll('.ai-review-form-detail').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      // Show loading modal
+      document.getElementById('loadingModal').style.display = 'flex';
+    });
+  });
 
   // Update rating display in real-time
   const ratingSlider = document.getElementById('rating_slider');
@@ -205,11 +301,20 @@
   }
 
   // Close modal when clicking outside
-  const modal = document.getElementById('ratingEditorModal');
-  if (modal) {
-    modal.addEventListener('click', function(e) {
+  const ratingModal = document.getElementById('ratingEditorModal');
+  if (ratingModal) {
+    ratingModal.addEventListener('click', function(e) {
       if (e.target === this) {
         toggleRatingEditor();
+      }
+    });
+  }
+
+  const aiReviewModal = document.getElementById('editAIReviewModal');
+  if (aiReviewModal) {
+    aiReviewModal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeAIReviewModal();
       }
     });
   }

@@ -27,19 +27,39 @@ A beginner-friendly Flask web application for managing your personal book librar
 - **Rate on Home Page** - Use green "Rate" button for quick rating without leaving the list
 - **Rate on Book Detail** - Use blue "Edit" or green "Add Rating" button on individual book pages
 
-### 🎯 Advanced Features
+### 🤖 AI Book Recommendations (Latest Feature!)
 
-- **Author-Centric Organization** - View author information including number of books
-- **Book-Author Relationships** - Track which author wrote each book
-- **Author Stats** - See count of total authors and books in your library
-- **Scope-Based Search** - Search within "Books" or "Authors" scopes
-- **Smart Delete Confirmation** - Two-step confirmation when deleting an author's last book
-- **Book Detail Pages** - Click any book title to view detailed information including ISBN, publication year, cover image, author biography, and rating
-- **Author Detail Pages** - Click any author name to view their profile with all books they've written, birth/death dates, and book statistics
-- **Cross-Navigation** - Seamlessly navigate between book and author detail pages
-- **Cascade Delete Author** - Delete an author and automatically remove all their books with a single operation
-- **Protected Author Deletion** - Confirmation dialogs warn about cascade effects before deletion
-- **Click-Through Navigation** - Click "BookAlchemy" header anytime to return to the main library page
+**Powered by RapidAPI Llama (GPT-compatible) endpoint**
+
+- **AI Review Generation** - Generate intelligent book reviews and recommendations powered by GPT
+- **Per-Book Reviews** - Each book can have its own AI-generated review cached in the database
+- **Smart Caching** - Reviews are stored in the database and reused (no permanent API connection needed)
+- **On-Demand Refresh** - Generate new reviews or update existing ones anytime
+- **Edit Reviews** - Manually modify AI-generated reviews to your preferences
+- **Loading Indicator** - Visual spinner shows during API calls (60-second timeout for reliability)
+- **Review Status Badge** - Green "AI Review" badge shows on books with generated reviews
+- **Library Analysis** - AI analyzes your entire library to generate contextual recommendations
+- **Multiple Views** - View AI reviews on home page, book detail page, or dedicated recommendation page
+- **Error Handling** - User-friendly error messages if API calls timeout or fail
+
+### 🔐 Environment Configuration (New!)
+
+The application now uses environment variables for sensitive data:
+
+**Create a `.env` file** in the project root with:
+```bash
+# API Configuration
+RAPIDAPI_KEY=your-key-here
+RAPIDAPI_HOST=open-ai21.p.rapidapi.com
+RAPIDAPI_URL=https://open-ai21.p.rapidapi.com/conversationllama
+AI_REQUEST_TIMEOUT=60
+
+# Flask Configuration
+FLASK_SECRET_KEY=your-secret-key
+FLASK_ENV=development
+```
+
+**Important**: The `.env` file is automatically excluded from git for security. Never commit it!
 
 ## Technology Stack
 
@@ -103,6 +123,7 @@ The main page displays all books in your library with:
 - Book covers (if available)
 - Book title and author
 - **Book ratings** displayed as filled/empty stars (★/☆) with numeric score
+- **AI Review badge** (green indicator when review is available)
 - Sort controls for title, author, and **rating**
 - Global search bar
 
@@ -110,7 +131,79 @@ The main page displays all books in your library with:
 - Click "Title", "Author", or "Rating" headers to sort
 - Use the search bar to find books
 - Click green "Rate" button to rate a book
+- Click blue "Generate Review" or "View Review" to manage AI reviews
 - Click "Delete" button to remove a book from your library
+
+### 🤖 Generate AI Book Reviews
+
+**From Home Page:**
+1. Look for books without a blue "View Review" button
+2. Click the blue **"Generate Review"** button
+3. A loading spinner appears while fetching the review
+4. Once complete, click **"View Review"** to see the AI-generated text
+
+**From Book Detail Page:**
+1. Scroll to the "AI Review" section
+2. If no review exists, click green **"Generate"** button
+3. A loading modal appears with a spinner
+4. Once generated, you can:
+   - Click **"View"** to see the full review on the recommendations page
+   - Click **"Edit"** to modify the review
+   - Click **"Refresh"** to generate a new review
+
+**From Recommendations Page:**
+1. Click **"Suggest a Book to Read"** from home page actions
+2. View all your books with their cached AI reviews
+3. For each book, you can:
+   - Click **"Edit"** to manually modify the review
+   - Click **"Refresh"** to generate a new review
+4. The page shows library statistics and analysis
+
+### 📝 Edit AI Reviews
+
+You can manually edit any AI-generated review:
+
+1. Navigate to the book (home, detail, or recommendations page)
+2. Click the orange **"Edit"** button (on recommendations page) or blue **"Edit"** (on detail page)
+3. A modal opens showing the current review text
+4. Edit the text as desired (supports any text format)
+5. Click **"Save Changes"** to update the review
+6. Click outside the modal or **"Cancel"** to discard changes
+
+**Note**: Edited reviews are saved to the database and persist across sessions.
+
+### 🔄 Refresh AI Reviews
+
+To generate a new review and replace the old one:
+
+1. Click the blue **"Refresh"** button (on detail page) or green **"Refresh"** (on recommendations page)
+2. A new API call is made to generate fresh review content
+3. The old review is replaced with the new one
+4. If you want to keep the old review, use **"Edit"** instead
+
+### ⚙️ AI Recommendation Settings
+
+**API Configuration:**
+The application connects to RapidAPI's Llama endpoint (GPT-compatible):
+- Endpoint: `https://open-ai21.p.rapidapi.com/conversationllama`
+- Timeout: 60 seconds (increased from default for reliability)
+- Free tier: 50 requests per month
+
+**Customizing AI Behavior:**
+To modify how the AI generates reviews, edit the prompt in `app.py`:
+
+```python
+# Around line 180 in app.py
+prompt = f"""
+Analyze this book and provide a detailed review:
+...
+"""
+```
+
+**API Rate Limiting:**
+- Free tier: 50 requests per month
+- If you exceed limits, consider upgrading your RapidAPI plan
+- Alternative AI providers: OpenAI, Anthropic, Cohere
 
 ### ⭐ Rate a Book - From Home Page
 
@@ -328,21 +421,87 @@ BookAlchemy/
 
 ## Configuration
 
+### Environment Variables
+
+The application uses a `.env` file for configuration. Create one in the project root:
+
+```bash
+# Flask Configuration
+FLASK_ENV=development
+FLASK_SECRET_KEY=your-secret-key-here
+
+# Database
+DATABASE_URI=sqlite:///data/library.sqlite
+
+# RapidAPI Configuration (for AI recommendations)
+RAPIDAPI_KEY=your-key-here
+RAPIDAPI_HOST=open-ai21.p.rapidapi.com
+RAPIDAPI_URL=https://open-ai21.p.rapidapi.com/conversationllama
+AI_REQUEST_TIMEOUT=60
+```
+
+### Setting Up AI Recommendations
+
+To enable AI book recommendations:
+
+1. **Create a RapidAPI Account**:
+   - Visit https://rapidapi.com
+   - Sign up for free account
+   - Navigate to: https://rapidapi.com/2Stallions/api/open-ai21
+   - Subscribe to the free tier
+
+2. **Get Your API Key**:
+   - After subscribing, find "API Key" in your profile
+   - Copy your key to the `.env` file as `RAPIDAPI_KEY`
+
+3. **Test the Connection**:
+   ```bash
+   python -c "
+   import os
+   from dotenv import load_dotenv
+   load_dotenv()
+   import requests
+   headers = {
+       'x-rapidapi-key': os.getenv('RAPIDAPI_KEY'),
+       'x-rapidapi-host': os.getenv('RAPIDAPI_HOST'),
+       'Content-Type': 'application/json'
+   }
+   payload = {'messages': [{'role': 'user', 'content': 'Say hello'}], 'web_access': False}
+   response = requests.post(os.getenv('RAPIDAPI_URL'), json=payload, headers=headers, timeout=60)
+   print('Status:', response.status_code)
+   "
+   ```
+
+4. **Generate Your First Review**:
+   - Add a book to your library
+   - Click "Generate Review" button
+   - Wait for the AI to analyze and generate a review
+
 ### Database URI
 
-The app uses SQLite by default. To change the database, modify `app.py`:
+The app uses SQLite by default. To change the database, modify `.env`:
 
 ```python
-db_path = os.path.join(basedir, 'data', 'library.sqlite')
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
+# For SQLite (default)
+DATABASE_URI=sqlite:///data/library.sqlite
+
+# For PostgreSQL (example)
+DATABASE_URI=postgresql://user:password@localhost/bookalchemy
+
+# For MySQL (example)
+DATABASE_URI=mysql+pymysql://user:password@localhost/bookalchemy
 ```
 
 ### Flask Secret Key
 
-For production, set the `FLASK_SECRET_KEY` environment variable:
+For production, set a strong secret key:
 
 ```bash
-export FLASK_SECRET_KEY='your-secret-key-here'
+# Generate a random secret key
+python -c "import secrets; print(secrets.token_hex(32))"
+
+# Add to .env
+FLASK_SECRET_KEY=your-generated-key-here
 ```
 
 ## Advanced: Using Migrations
@@ -383,15 +542,28 @@ Or reset the database:
 python data/reset_db.py
 ```
 
-### Tests Failing
+### AI Review Generation Issues
 
-Ensure the virtual environment is activated and all dependencies are installed:
+**"Error connecting to AI service: Connection refused"**
+- Check your internet connection
+- Verify `RAPIDAPI_KEY` is correctly set in `.env`
+- Ensure you've subscribed to the API on RapidAPI
 
-```bash
-source .venv/bin/activate
-pip install -r requirements.txt
-pytest tests/ -v
-```
+**"Request timed out" error**
+- The API is taking longer than 60 seconds
+- This is normal for the free tier
+- Try again in a few moments
+- Consider upgrading your RapidAPI plan
+
+**"No recommendation generated"**
+- The API returned an empty result
+- Try refreshing the review
+- Check your RapidAPI monthly request limit (50 for free tier)
+- If limit reached, wait for next month or upgrade plan
+
+**Reviews show different content each time**
+- This is expected! The AI generates fresh reviews on each call
+- To keep specific text, use the **"Edit"** button to manually save your preferred version
 
 ## CSS Styling
 
@@ -431,35 +603,157 @@ The codebase is written to be beginner-friendly with:
 - `POST /author/<id>/delete` - Delete author and all their books (cascade deletion)
 - `GET /book/<id>/confirm_delete` - Delete confirmation page
 - `POST /book/<id>/confirm_delete` - Confirm book deletion
+- `POST /book/<id>/ai_review` - Generate AI recommendation (NEW!)
+- `POST /book/<id>/edit_review` - Edit AI recommendation (NEW!)
+- `GET /recommend` - View all cached AI reviews (NEW!)
+
+### AI-Specific Routes (New!)
+- `POST /book/<id>/ai_review` - Fetch AI recommendation from RapidAPI
+  - Returns: Flash message with status
+  - Redirect: Back to referring page
+  - Timeout: 60 seconds
+  - Caches result in database
+
+- `POST /book/<id>/edit_review` - Manually edit cached AI recommendation
+  - Accepts: `ai_recommendation` (textarea)
+  - Saves directly to database
+
+- `GET /recommend` - Display all books with their cached AI reviews
+  - Shows: Book grid with individual reviews
+  - Actions: Edit, Refresh, View each review
+  - Analysis: Library statistics and ratings
 
 ### Admin Routes
 - `GET /admin` - Admin test interface
 - `POST /admin/delete_author/<id>` - Admin delete author
 - `POST /admin/delete_book/<id>` - Admin delete book
 
+## AI Recommendations API Integration
+
+### RapidAPI Configuration
+
+**Provider**: RapidAPI Llama Endpoint (GPT-compatible)
+- **Base URL**: `https://open-ai21.p.rapidapi.com/conversationllama`
+- **Authentication**: API key in `x-rapidapi-key` header
+- **Timeout**: 60 seconds (configurable)
+- **Rate Limit**: 50 requests/month (free tier)
+
+### Request Format
+
+```python
+headers = {
+    "x-rapidapi-key": "your-api-key",
+    "x-rapidapi-host": "open-ai21.p.rapidapi.com",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "messages": [
+        {
+            "role": "user",
+            "content": "Your prompt here"
+        }
+    ],
+    "web_access": False
+}
+
+response = requests.post(url, json=payload, headers=headers, timeout=60)
+```
+
+### Response Format
+
+Successful response (200 OK):
+```json
+{
+  "result": {
+    "message": "Generated recommendation text...",
+    "conversations": [...]
+  }
+}
+```
+
+### Error Handling
+
+The application handles:
+- **Timeout errors** (>60 seconds): User-friendly message about free tier
+- **Connection errors**: Message to check internet and API key
+- **Empty responses**: Fallback message
+- **Invalid API key**: Connection refused error
+
+All errors are logged and users see helpful messages.
+
+### Caching Strategy
+
+Reviews are cached in the database (`Book.ai_recommendation` field):
+- Generated once per book, reused until "Refresh" is clicked
+- Editing a review saves the custom text to database
+- No permanent API connection needed after generation
+- Database stores complete recommendation text
+
+### Monthly Request Limits
+
+**Free Tier:**
+- 50 requests per month
+- Counter resets on 1st of each month
+- Check RapidAPI dashboard for current usage
+
+**If You Exceed Limits:**
+1. Upgrade to a paid plan on RapidAPI
+2. Switch to a different AI provider (OpenAI, Anthropic, etc.)
+3. Wait for the monthly reset
+
+**Checking Usage:**
+- Visit https://rapidapi.com/developer/dashboard
+- Navigate to "Subscriptions"
+- View current month's usage
+
 ## Frontend-Backend Communication
 
 The application uses RESTful principles:
 - **GET requests** - Retrieve and display data
-- **POST requests** - Submit forms (add/delete operations)
+- **POST requests** - Submit forms (add/delete operations, AI requests)
 - **Query parameters** - Preserve state (sort, order, search)
 - **Redirects** - Maintain user context after operations
+- **Flash messages** - User feedback (success/error)
 - **Jinja2 templating** - Dynamic HTML generation with database data
 - **Form highlighting** - Search results highlight matching text
+- **Loading modals** - Visual feedback during long operations
 
-For detailed communication patterns, see `FRONTEND_BACKEND_COMMUNICATION.md`
+### AI Request Flow
+
+1. User clicks "Generate Review" button
+2. Frontend shows loading modal with spinner
+3. Frontend sends POST request to `/book/<id>/ai_review`
+4. Backend makes HTTP request to RapidAPI with 60-second timeout
+5. Backend receives response and saves to database
+6. Backend sends success message
+7. Loading modal closes, page refreshes
+8. User sees cached review on page
 
 ## Future Enhancements
 
-Potential features for expansion:
+Completed features (recent additions):
+- ✅ Book ratings (1-10 scale) with visual star display
+- ✅ AI-powered book recommendations using RapidAPI Llama
+- ✅ Caching strategy for AI reviews in database
+- ✅ Per-book review generation and editing
+- ✅ Loading indicators for better UX
+- ✅ Environment-based configuration with .env
+
+Potential features for future expansion:
+- Advanced AI providers (OpenAI GPT-4, Anthropic Claude, Cohere)
 - User accounts and authentication
-- Book ratings and reviews
 - Reading lists and collections
-- Book recommendations
-- Export/import functionality
-- Advanced filtering options
-- Reading progress tracking
-- Book notes and annotations
+- Multi-language support
+- Export/import functionality (CSV, JSON)
+- Advanced filtering (by genre, publication year, rating range)
+- Reading progress tracking (pages read)
+- Book notes and personal annotations
+- Social sharing and book club features
+- Mobile app version
+- Full-text search across all fields
+- Email notifications for recommendations
+- Batch import from external APIs (Google Books, ISBN databases)
 
 ## License
 

@@ -2,6 +2,11 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from markupsafe import Markup, escape
 import os
+import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from data_models import db, Author, Book
 try:
@@ -145,60 +150,103 @@ def create_app(config_overrides=None):
 
 		# Also query authors for display (we keep authors listing but not shown anymore per UI change)
 		authors = Author.query.order_by(Author.name).all()
-		total_authors = Author.query.count()
 		total_books = Book.query.count()
+		total_authors = Author.query.count()
 		no_results = (len(books) == 0 and bool(q))
 		return render_template('home.html', books=books, authors=authors, sort_by=sort_by, order=order, q=q, no_results=no_results, scope=scope, authors_search=authors_search, total_authors=total_authors, total_books=total_books)
 
 	@app.route('/add_author', methods=['GET', 'POST'])
 	def add_author():
-		# Preserve current sorting when navigating from home
-		sort_by = request.args.get('sort', request.form.get('sort')) or 'title'
-		order = request.args.get('order', request.form.get('order')) or 'asc'
-		q = request.args.get('q', request.form.get('q')) or ''
-
-		author_id = request.args.get('author_id') or request.form.get('author_id')
+		"""Add a new author to the database."""
 		if request.method == 'POST':
 			name = request.form.get('name')
-			birthdate_str = request.form.get('birthdate')
-			deathdate_str = request.form.get('date_of_death')
-
-			def parse_date(s):
-				if not s:
-					return None
-				return datetime.strptime(s, '%Y-%m-%d').date()
-
-			birthdate = parse_date(birthdate_str)
-			date_of_death = parse_date(deathdate_str)
-
-			if author_id:
-				# Update existing
+			birth_date = request.form.get('birth_date')
+			date_of_death = request.form.get('date_of_death')
+			
+			if not name:
+				flash('Author name is required.', 'error')
+			else:
 				try:
-					author_id = int(author_id)
-					existing = Author.query.get(author_id)
-					if existing:
-						existing.name = name
-						existing.birth_date = birthdate
-						existing.date_of_death = date_of_death
-						db.session.commit()
-						return redirect(url_for('home', sort=sort_by, order=order, q=q, success='author_updated'))
-				except Exception:
-					pass
-			new_author = Author(name=name, birth_date=birthdate, date_of_death=date_of_death)
-			db.session.add(new_author)
+					from datetime import datetime
+					b_date = datetime.strptime(birth_date, "%Y-%m-%d").date() if birth_date else None
+					d_date = datetime.strptime(date_of_death, "%Y-%m-%d").date() if date_of_death else None
+					
+					author = Author(name=name, birth_date=b_date, date_of_death=d_date)
+					db.session.add(author)
+					db.session.commit()
+					flash(f'Author "{name}" added successfully!', 'success')
+					return redirect(url_for('home'))
+				except Exception as e:
+					flash(f'Error adding author: {str(e)}', 'error')
+		
+		return render_template('add_author.html')
+	@app.route('/book/<int:book_id>/ai_review', methods=['POST'])
+	def ai_review_book(book_id):
+		"""Fetch AI recommendation for a book and cache it in DB."""
+		book = Book.query.get_or_404(book_id)
+		# Prepare prompt for AI
+		prompt = f"""Based on the following book in my library, please provide a detailed recommendation or analysis.
+Book: {book.title} by {book.author.name if book.author else 'Unknown Author'}
+Rating: {book.rating if book.rating else 'Not rated'}
+
+Please provide:
+1. Book title
+2. Author name
+3. Why you recommend it or analysis
+4. Genre/themes it shares with other books
+"""
+		try:
+			url = os.environ.get('RAPIDAPI_URL', 'https://open-ai21.p.rapidapi.com/conversationllama')
+			payload = {
+				"messages": [
+					{
+						"role": "user",
+						"content": prompt
+					}
+				],
+				"web_access": False
+			}
+			headers = {
+				"x-rapidapi-key": os.environ.get('RAPIDAPI_KEY'),
+				"x-rapidapi-host": os.environ.get('RAPIDAPI_HOST', 'open-ai21.p.rapidapi.com'),
+				"Content-Type": "application/json"
+			}
+			timeout = int(os.environ.get('AI_REQUEST_TIMEOUT', 60))
+			# Increased timeout to 60 seconds (30 was too short for some requests)
+			response = requests.post(url, json=payload, headers=headers, timeout=timeout)
+			response.raise_for_status()
+			result = response.json()
+			recommendation = result.get('result', 'No recommendation generated')
+			if isinstance(recommendation, dict):
+				recommendation = recommendation.get('message', str(recommendation))
+			# Save to DB
+			book.ai_recommendation = recommendation
 			db.session.commit()
-			# Redirect to home, preserving sort/order and showing a success flag
-			return redirect(url_for('home', sort=sort_by, order=order, q=q, success='author_added'))
+			flash('AI recommendation fetched and saved!', 'success')
+		except requests.exceptions.Timeout:
+			flash('AI service is taking too long to respond. Please try again in a few moments. (The free tier has limited resources)', 'error')
+		except requests.exceptions.ConnectionError as e:
+			flash(f'Connection error: Unable to reach AI service. Please check your internet connection.', 'error')
+		except requests.exceptions.RequestException as e:
+			flash(f'Error connecting to AI service: {str(e)}', 'error')
+		except Exception as e:
+			flash(f'Error generating recommendation: {str(e)}', 'error')
+		return redirect(url_for('recommend'))
 
-		# On GET, render add form. If editing, pass `author` to prefill form
-		author_obj = None
-		if author_id:
-			try:
-				author_obj = Author.query.get(int(author_id))
-			except Exception:
-				author_obj = None
-		return render_template('add_author.html', sort=sort_by, order=order, q=q, author=author_obj)
-
+	@app.route('/book/<int:book_id>/edit_review', methods=['POST'])
+	def edit_review(book_id):
+		"""Edit and save the AI recommendation for a book."""
+		book = Book.query.get_or_404(book_id)
+		ai_recommendation = request.form.get('ai_recommendation', '').strip()
+		
+		if ai_recommendation:
+			book.ai_recommendation = ai_recommendation
+			db.session.commit()
+			flash('Review updated successfully!', 'success')
+		else:
+			flash('Review cannot be empty.', 'error')
+		
+		return redirect(url_for('recommend'))
 	@app.route('/add_book', methods=['GET', 'POST'])
 	def add_book():
 		# Provide list of authors for the dropdown and keep any sorting state
@@ -374,6 +422,26 @@ def create_app(config_overrides=None):
 		
 		flash(f'Author "{author_name}" and all their books have been deleted successfully.', 'success')
 		return redirect(url_for('home'))
+
+	@app.route('/recommend')
+	def recommend():
+		"""Show cached AI recommendations for books in the user's library."""
+		books = Book.query.order_by(Book.title).all()
+		
+		if not books:
+			flash('Add some books to your library first to get recommendations!', 'info')
+			return redirect(url_for('home'))
+		
+		# Count books with cached reviews
+		books_with_reviews = [book for book in books if book.ai_recommendation]
+		
+		if not books_with_reviews:
+			flash('No AI recommendations cached yet. Trigger a new review for any book to fetch data.', 'info')
+		
+		return render_template('recommend.html', 
+							  book_count=len(books),
+							  books=books,
+							  books_with_reviews_count=len(books_with_reviews))
 
 	return app
 

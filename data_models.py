@@ -44,6 +44,8 @@ class Book(db.Model):
 	# User rating for the book (1-10 scale, nullable if not rated)
 	rating = db.Column(db.Integer, nullable=True)
 	author_id = db.Column(db.Integer, db.ForeignKey('author.id', ondelete='CASCADE'), nullable=False)
+	# Cached AI recommendation/metadata for this book
+	ai_recommendation = db.Column(db.Text, nullable=True)
 
 	# relationship to Author. backref creates .books on Author instances.
 	# cascade='all, delete-orphan' ensures books are deleted when author is deleted
