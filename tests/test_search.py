@@ -1,15 +1,18 @@
 import sys
 import os
 import pytest
+
 # Add project root to sys.path so `app` is importable
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from app import app as main_app
-from data_models import db, Author, Book
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..')))
+
+from backend.app import app as main_app  # noqa: E402
+from backend.data_models import db, Author, Book  # noqa: E402
 
 
 @pytest.fixture
 def app():
-    from app import create_app
+    from backend.app import create_app
     test_app = create_app({'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:'})
     with test_app.app_context():
         db.create_all()
@@ -38,7 +41,8 @@ def test_book_search(client, app):
         rv = client.get('/?q=Unit')
         assert rv.status_code == 200
         body = rv.get_data(as_text=True)
-        # highlighted title will have <mark> tags, so check a fragment exists and a <mark> present
+        # highlighted title will have <mark> tags, so check a fragment exists
+        # and a <mark> present
         assert f'Unit Test Book {uid}'.split()[1] in body
         assert '<mark' in body
         # cleanup
@@ -72,7 +76,11 @@ def test_book_cover_url_shows_in_home(client, app):
         db.session.add(a)
         db.session.commit()
         cover = f'https://example.com/{uid}.jpg'
-        b = Book(isbn=uid, title=f'Cover Test {uid}', author_id=a.id, cover_url=cover)
+        b = Book(
+            isbn=uid,
+            title=f'Cover Test {uid}',
+            author_id=a.id,
+            cover_url=cover)
         db.session.add(b)
         db.session.commit()
 

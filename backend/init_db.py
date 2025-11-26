@@ -2,17 +2,20 @@
 
 Usage:
     source venv/bin/activate
-    python init_db.py
+    python -m backend.init_db
 """
-from app import app
-from data_models import db
+from backend.app import app
+from backend.data_models import db
 
 
 def create_schema():
     with app.app_context():
         db.create_all()
         print("Database schema created (tables should now exist).")
-        print("Note: For production or historic schema management, use Flask-Migrate and run `flask db init/migrate/upgrade` instead of `create_all()`.")
+        print(
+            "Note: For production or historic schema management, "
+            "use Flask-Migrate and run `flask db init/migrate/upgrade` "
+            "instead of `create_all()`.")
         # Optionally ensure small development-only columns are present
         try:
             from bin.ensure_cover_column import ensure_cover_url

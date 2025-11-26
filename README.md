@@ -89,14 +89,14 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Initialize database
-python init_db.py
+python -m backend.init_db
 
 # Seed with example data (optional)
 python data/seed_authors.py
 python data/seed_books.py
 
 # Start the development server
-python app.py
+python run.py
 ```
 
 Open your browser and navigate to: **http://127.0.0.1:5000**
@@ -392,31 +392,38 @@ pytest tests/ --cov
 
 ```
 BookAlchemy/
-├── app.py                    # Main Flask application
-├── data_models.py            # SQLAlchemy models (Author, Book)
-├── init_db.py               # Database initialization script
-├── requirements.txt         # Python dependencies
-├── README.md               # This file
-├── static/
-│   └── styles.css          # Application styling (beginner-friendly)
-├── templates/
-│   ├── base.html           # Base template with header/footer
-│   ├── home.html           # Main library view with books/authors list
-│   ├── book_detail.html    # Detailed book information page
-│   ├── author_detail.html  # Author profile with all their books
-│   ├── add_author.html     # Author creation form
-│   ├── add_book.html       # Book creation form
-│   ├── confirm_delete_book.html  # Delete confirmation page
-│   └── error_db_missing.html     # Database error page
-├── data/
-│   ├── library.sqlite      # SQLite database file
-│   ├── seed_authors.py     # Author seed data
-│   └── seed_books.py       # Book seed data
-└── tests/
-    ├── test_admin_ui.py
-    ├── test_search.py
-    ├── test_delete_book.py
-    └── test_delete_author.py   # New: Cascade deletion tests
+├── run.py                       # Main application entry point
+├── backend/                     # Backend logic (Python/Flask)
+│   ├── __init__.py             # Package initialization
+│   ├── app.py                  # Flask application & routes
+│   ├── data_models.py          # SQLAlchemy models (Author, Book)
+│   └── init_db.py              # Database initialization script
+├── frontend/                    # Frontend assets
+│   ├── templates/              # Jinja2 HTML templates
+│   │   ├── base.html           # Base template with header/footer
+│   │   ├── home.html           # Main library view
+│   │   ├── book_detail.html    # Book information page
+│   │   ├── author_detail.html  # Author profile page
+│   │   ├── add_author.html     # Author creation form
+│   │   ├── add_book.html       # Book creation form
+│   │   ├── confirm_delete_book.html  # Delete confirmation
+│   │   ├── recommend.html      # AI recommendations page
+│   │   └── error_db_missing.html     # Database error page
+│   └── static/                 # Static files
+│       └── styles.css          # Application styling
+├── data/                       # Data & database
+│   ├── library.sqlite          # SQLite database file
+│   ├── seed_authors.py         # Author seed data
+│   └── seed_books.py           # Book seed data
+├── tests/                      # Test suite
+│   ├── test_admin_ui.py
+│   ├── test_search.py
+│   ├── test_delete_book.py
+│   ├── test_delete_author.py
+│   └── test_book_ratings.py
+├── docs/                       # Documentation (gitignored)
+├── requirements.txt            # Python dependencies
+└── .env                        # Environment configuration
 ```
 
 ## Configuration

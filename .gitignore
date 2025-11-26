@@ -21,6 +21,9 @@ env/
 # SQLite DB
 data/*.sqlite
 
+# Documentation
+docs/
+
 # Python packaging
 *.egg-info/
 dist/

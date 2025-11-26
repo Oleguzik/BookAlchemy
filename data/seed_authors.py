@@ -3,14 +3,16 @@
 This script is safe to run multiple times: it checks for the author's
 name before adding a new record so duplicates are not created.
 """
-import sys, os
-# add project root to path so `from app import app` works when run via module or direct script
+from datetime import datetime
+from backend.data_models import db, Author
+from backend.app import app
+import sys
+import os
+# add project root to path so `from app import app` works when run via
+# module or direct script
 proj_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if proj_root not in sys.path:
     sys.path.insert(0, proj_root)
-from app import app
-from data_models import db, Author
-from datetime import datetime
 
 AUTHORS = [
     ("Jane Austen", "1775-12-16", "1817-07-18"),
@@ -40,7 +42,10 @@ def seed_authors():
             if existing:
                 print(f"Skipping existing author: {name}")
                 continue
-            a = Author(name=name, birth_date=parse_date(b), date_of_death=parse_date(d))
+            a = Author(
+                name=name,
+                birth_date=parse_date(b),
+                date_of_death=parse_date(d))
             db.session.add(a)
         db.session.commit()
         print("Seeding completed.")

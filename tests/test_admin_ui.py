@@ -1,15 +1,18 @@
 import sys
 import os
 import pytest
+
 # Add project root to sys.path so `app` is importable
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from app import app as main_app
-from data_models import db, Author, Book
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..')))
+
+from backend.app import app as main_app  # noqa: E402
+from backend.data_models import db, Author, Book  # noqa: E402
 
 
 @pytest.fixture
 def app():
-    from app import create_app
+    from backend.app import create_app
     test_app = create_app({'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:'})
     with test_app.app_context():
         db.create_all()
@@ -28,7 +31,11 @@ def test_admin_page_lists_authors_and_books(client, app):
         a = Author(name='Alice')
         db.session.add(a)
         db.session.commit()
-        b = Book(isbn='111', title='Alice Book', author_id=a.id, cover_url='https://example.org/111.jpg')
+        b = Book(
+            isbn='111',
+            title='Alice Book',
+            author_id=a.id,
+            cover_url='https://example.org/111.jpg')
         db.session.add(b)
         db.session.commit()
 
