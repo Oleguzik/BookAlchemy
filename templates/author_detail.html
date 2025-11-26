@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="layout">
+  <main class="main-col">
+    <div class="card">
+      <!-- Author Header -->
+      <div style="margin-bottom: 24px;">
+        <h1 style="margin: 0 0 12px 0; font-size: 36px; color: #333;">{{ author.name }}</h1>
+        
+        <!-- Author Bio/Dates -->
+        <div style="background-color: #e3f2fd; padding: 16px; border-radius: 4px; border-left: 4px solid #2196F3; margin-bottom: 16px;">
+          <div style="display: flex; gap: 32px; flex-wrap: wrap; font-size: 14px;">
+            {% if author.birth_date %}
+            <div>
+              <p style="margin: 0; color: #1976D2;"><strong>Born:</strong></p>
+              <p style="margin: 4px 0 0 0; font-size: 16px; color: #333;">{{ author.birth_date }}</p>
+            </div>
+            {% endif %}
+            
+            {% if author.date_of_death %}
+            <div>
+              <p style="margin: 0; color: #1976D2;"><strong>Died:</strong></p>
+              <p style="margin: 4px 0 0 0; font-size: 16px; color: #333;">{{ author.date_of_death }}</p>
+            </div>
+            {% endif %}
+
+            <div>
+              <p style="margin: 0; color: #1976D2;"><strong>Books in Library:</strong></p>
+              <p style="margin: 4px 0 0 0; font-size: 16px; color: #333; font-weight: bold;">{{ books|length }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <a href="{{ url_for('home') }}" class="btn" style="background-color: #6c757d; color: white; text-decoration: none; padding: 10px 16px; border-radius: 4px; display: inline-block;">
+            <i class="fa fa-arrow-left"></i> Back to Library
+          </a>
+          <a href="{{ url_for('add_book') }}" class="btn" style="background-color: #28a745; color: white; text-decoration: none; padding: 10px 16px; border-radius: 4px; display: inline-block;">
+            <i class="fa fa-plus"></i> Add Book by This Author
+          </a>
+        </div>
+      </div>
+
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #ddd;">
+
+      <!-- Books by Author -->
+      <h2 style="margin: 0 0 16px 0; font-size: 24px; color: #333;">📚 Books</h2>
+
+      {% if books|length == 0 %}
+        <div style="background-color: #fff3cd; padding: 16px; border-radius: 4px; border-left: 4px solid #ffc107;">
+          <p style="margin: 0; color: #856404;"><i class="fa fa-info-circle"></i> No books by {{ author.name }} in the library yet.</p>
+        </div>
+      {% else %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          {% for book in books %}
+          <div class="book-card" style="background: white; border: 1px solid #e0e0e0; border-radius: 4px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+            {% if book.cover_url %}
+            <div style="margin-bottom: 12px; height: 200px; overflow: hidden; border-radius: 4px; background-color: #f0f0f0;">
+              <img src="{{ book.cover_url }}" alt="{{ book.title }}" 
+                   style="width: 100%; height: 100%; object-fit: cover;" 
+                   onerror="this.parentElement.style.display='none'" />
+            </div>
+            {% endif %}
+
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.4;">
+              <a href="{{ url_for('book_detail', book_id=book.id) }}" style="color: #2196F3; text-decoration: none;">
+                {{ book.title }}
+              </a>
+            </h3>
+
+            {% if book.publication_year %}
+            <p style="margin: 0 0 8px 0; color: #666; font-size: 12px;">
+              <i class="fa fa-calendar"></i> {{ book.publication_year }}
+            </p>
+            {% endif %}
+
+            {% if book.isbn %}
+            <p style="margin: 0 0 12px 0; color: #999; font-size: 11px; font-family: monospace;">
+              ISBN: {{ book.isbn }}
+            </p>
+            {% endif %}
+
+            <div style="display: flex; gap: 4px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+              <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn" style="flex: 1; background-color: #2196F3; color: white; text-decoration: none; padding: 6px 8px; border-radius: 3px; text-align: center; font-size: 12px;">
+                <i class="fa fa-eye"></i> View
+              </a>
+              <form method="POST" action="{{ url_for('delete_book', book_id=book.id) }}" style="flex: 1;" onsubmit="return confirm('Delete this book?');">
+                <button type="submit" class="btn btn-danger" style="width: 100%; background-color: #d9534f; color: white; border: none; padding: 6px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                  <i class="fa fa-trash"></i> Delete
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <!-- Sidebar -->
+  <aside class="side-col">
+    <div class="card">
+      <h3 style="margin: 0 0 12px 0;">👤 Author ID</h3>
+      <p style="margin: 0; font-family: monospace; font-size: 16px; color: #2196F3; font-weight: bold;">{{ author.id }}</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin: 0 0 12px 0;">📊 Statistics</h3>
+      <p style="margin: 0 0 8px 0;"><strong>Books:</strong> <span style="color: #2196F3; font-weight: bold;">{{ books|length }}</span></p>
+      {% if author.birth_date %}
+      <p style="margin: 0 0 8px 0;"><strong>Born:</strong> {{ author.birth_date }}</p>
+      {% endif %}
+      {% if author.date_of_death %}
+      <p style="margin: 0;"><strong>Died:</strong> {{ author.date_of_death }}</p>
+      {% endif %}
+    </div>
+
+    <div class="card aside-links">
+      <h3 style="margin: 0 0 12px 0;">Quick Links</h3>
+      <p><a class="btn" href="{{ url_for('home') }}"><i class="fa fa-home"></i> Library</a></p>
+      <p><a class="btn" href="{{ url_for('add_author') }}"><i class="fa fa-user"></i> Add Author</a></p>
+    </div>
+  </aside>
+</div>
+{% endblock %}

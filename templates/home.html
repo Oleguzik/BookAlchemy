@@ -30,7 +30,10 @@
           {% for author in authors_search %}
             <div class="book-row">
               <div>
-                <h3 class="title">{{ author.name | highlight(q) }} <small class="meta">({{ author.books|length }} books)</small></h3>
+                <h3 class="title">
+                  <a href="{{ url_for('author_detail', author_id=author.id) }}" style="color: #333; text-decoration: none;">{{ author.name | highlight(q) }}</a>
+                  <small class="meta">({{ author.books|length }} books)</small>
+                </h3>
                 <p class="meta">{{ author.birth_date or '' }} {% if author.date_of_death %}– {{ author.date_of_death }}{% endif %}</p>
               </div>
             </div>
@@ -42,8 +45,17 @@
       <img src="{{ book.cover_url }}" alt="cover" class="book-cover" style="width:72px; height:auto;" onerror="this.style.display='none'" />
       {% endif %}
       <div>
-        <h3 class="title">{{ book.title | highlight(q) }}</h3>
-        <p class="meta">by {{ (book.author.name if book.author else 'Unknown') | highlight(q) }} {% if book.author %}<span class="meta">({{ book.author.books|length }} books)</span>{% endif %}</p>
+        <h3 class="title">
+          <a href="{{ url_for('book_detail', book_id=book.id) }}" style="color: #333; text-decoration: none;">{{ book.title | highlight(q) }}</a>
+        </h3>
+        <p class="meta">by 
+          {% if book.author %}
+          <a href="{{ url_for('author_detail', author_id=book.author.id) }}" style="color: #2196F3; text-decoration: none;">{{ book.author.name | highlight(q) }}</a>
+          {% else %}
+          <span>Unknown</span>
+          {% endif %}
+          {% if book.author %}<span class="meta">({{ book.author.books|length }} books)</span>{% endif %}
+        </p>
       </div>
       <div style="margin-left:auto; display:flex; gap:8px;">
         <form method="POST" action="{{ url_for('delete_book', book_id=book.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this book?');">

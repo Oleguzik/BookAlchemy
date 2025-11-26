@@ -315,6 +315,20 @@ def create_app(config_overrides=None):
 		# GET request - show confirmation page
 		return render_template('confirm_delete_book.html', book=b, author=author)
 
+	@app.route('/book/<int:book_id>')
+	def book_detail(book_id):
+		"""Display detailed information about a specific book."""
+		book = Book.query.get_or_404(book_id)
+		return render_template('book_detail.html', book=book)
+
+	@app.route('/author/<int:author_id>')
+	def author_detail(author_id):
+		"""Display detailed information about a specific author and all their books."""
+		author = Author.query.get_or_404(author_id)
+		# Get all books by this author, sorted by title
+		books = Book.query.filter_by(author_id=author_id).order_by(Book.title).all()
+		return render_template('author_detail.html', author=author, books=books)
+
 	return app
 
 
@@ -323,4 +337,4 @@ app = create_app()
 
 
 if __name__ == '__main__':
-	app.run(debug=True)
+	app.run(port=5014, debug=True)
