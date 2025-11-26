@@ -329,6 +329,22 @@ def create_app(config_overrides=None):
 		books = Book.query.filter_by(author_id=author_id).order_by(Book.title).all()
 		return render_template('author_detail.html', author=author, books=books)
 
+	@app.route('/author/<int:author_id>/delete', methods=['POST'])
+	def delete_author(author_id):
+		"""Delete an author and all their books from the database."""
+		author = Author.query.get_or_404(author_id)
+		author_name = author.name
+		
+		# Delete all books by this author (cascade handles this automatically)
+		Book.query.filter_by(author_id=author_id).delete()
+		
+		# Delete the author
+		db.session.delete(author)
+		db.session.commit()
+		
+		flash(f'Author "{author_name}" and all their books have been deleted successfully.', 'success')
+		return redirect(url_for('home'))
+
 	return app
 
 

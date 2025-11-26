@@ -41,10 +41,11 @@ class Book(db.Model):
 	publication_year = db.Column(db.Integer, nullable=True)
     # Optional direct link to a cover image (e.g., hosted image URL)
 	cover_url = db.Column(db.String(512), nullable=True)
-	author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
+	author_id = db.Column(db.Integer, db.ForeignKey('author.id', ondelete='CASCADE'), nullable=False)
 
 	# relationship to Author. backref creates .books on Author instances.
-	author = db.relationship('Author', backref=db.backref('books', lazy=True))
+	# cascade='all, delete-orphan' ensures books are deleted when author is deleted
+	author = db.relationship('Author', backref=db.backref('books', lazy=True, cascade='all, delete-orphan'))
 
 	def __repr__(self):
 		return f"<Book id={self.id} title={self.title!r} isbn={self.isbn!r}>"

@@ -39,6 +39,11 @@
           <a href="{{ url_for('add_book') }}" class="btn" style="background-color: #28a745; color: white; text-decoration: none; padding: 10px 16px; border-radius: 4px; display: inline-block;">
             <i class="fa fa-plus"></i> Add Book by This Author
           </a>
+          <form method="POST" action="{{ url_for('delete_author', author_id=author.id) }}" style="display:inline;" onsubmit="return confirm('⚠️  DANGER: Delete &quot;{{ author.name }}&quot; AND ALL {{ books|length }} book(s)?\n\nThis action cannot be undone!');">
+            <button type="submit" class="btn btn-danger" style="background-color: #d9534f; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer;">
+              <i class="fa fa-trash"></i> Delete Author & Books
+            </button>
+          </form>
         </div>
       </div>
 
