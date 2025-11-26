@@ -207,13 +207,16 @@ def create_app(config_overrides=None):
 			title = request.form.get('title')
 			pub_year = request.form.get('publication_year')
 			cover_url = request.form.get('cover_url')
+			rating = request.form.get('rating')
 			author_id = request.form.get('author_id')
 
 			try:
 				pub_year = int(pub_year) if pub_year else None
+				rating = int(rating) if rating else None
 				author_id = int(author_id) if author_id else None
 			except ValueError:
 				pub_year = None
+				rating = None
 				author_id = None
 
 			if book_id:
@@ -225,12 +228,13 @@ def create_app(config_overrides=None):
 						existing.title = title
 						existing.publication_year = pub_year
 						existing.cover_url = cover_url
+						existing.rating = rating
 						existing.author_id = author_id
 						db.session.commit()
 						return redirect(url_for('home', sort=sort_by, order=order, q=q, success='book_updated'))
 				except Exception:
 					pass
-			new_book = Book(isbn=isbn, title=title, publication_year=pub_year, author_id=author_id, cover_url=cover_url)
+			new_book = Book(isbn=isbn, title=title, publication_year=pub_year, author_id=author_id, cover_url=cover_url, rating=rating)
 			db.session.add(new_book)
 			db.session.commit()
 			return redirect(url_for('home', sort=sort_by, order=order, q=q, success='book_added'))
@@ -320,6 +324,26 @@ def create_app(config_overrides=None):
 		"""Display detailed information about a specific book."""
 		book = Book.query.get_or_404(book_id)
 		return render_template('book_detail.html', book=book)
+
+	@app.route('/book/<int:book_id>/rate', methods=['POST'])
+	def rate_book(book_id):
+		"""Update the rating for a book (1-10)."""
+		book = Book.query.get_or_404(book_id)
+		rating = request.form.get('rating')
+		
+		if rating:
+			try:
+				rating_val = int(rating)
+				if 1 <= rating_val <= 10:
+					book.rating = rating_val
+					db.session.commit()
+					flash(f'Rating updated to {rating_val}/10 for "{book.title}".', 'success')
+				else:
+					flash('Rating must be between 1 and 10.', 'error')
+			except (ValueError, TypeError):
+				flash('Invalid rating value.', 'error')
+		
+		return redirect(url_for('book_detail', book_id=book_id))
 
 	@app.route('/author/<int:author_id>')
 	def author_detail(author_id):

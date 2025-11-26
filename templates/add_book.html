@@ -30,6 +30,14 @@
     <label for="cover_url">Cover URL (optional):</label>
     <input type="url" id="cover_url" name="cover_url" value="{{ book.cover_url if book else '' }}" placeholder="https://example.com/cover.jpg"><br><br>
 
+    <label for="rating">Rating (1-10, optional):</label>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <input type="range" id="rating" name="rating" min="1" max="10" value="{{ book.rating if book and book.rating else '5' }}" style="width: 200px;">
+      <span id="rating_value" style="font-weight: bold; width: 30px;">{{ book.rating if book and book.rating else '5' }}</span>
+      <span style="color: #666;">★</span>
+    </div>
+    <br><br>
+
     <label for="author_id">Author:</label>
     <select id="author_id" name="author_id" required>
       <option value="">Select an author</option>
@@ -46,3 +54,15 @@
 
   </body>
 </html>
+
+<script>
+  // Update rating display in real-time as user changes slider
+  const ratingSlider = document.getElementById('rating');
+  const ratingValue = document.getElementById('rating_value');
+  
+  if (ratingSlider) {
+    ratingSlider.addEventListener('input', function() {
+      ratingValue.textContent = this.value;
+    });
+  }
+</script>
