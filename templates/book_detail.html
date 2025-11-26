@@ -185,7 +185,11 @@
 <script>
   function toggleRatingEditor() {
     const modal = document.getElementById('ratingEditorModal');
-    modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    if (modal.style.display === 'none' || modal.style.display === '') {
+      modal.style.display = 'flex';
+    } else {
+      modal.style.display = 'none';
+    }
   }
 
   // Update rating display in real-time
@@ -201,9 +205,12 @@
   }
 
   // Close modal when clicking outside
-  document.getElementById('ratingEditorModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-      toggleRatingEditor();
-    }
-  });
+  const modal = document.getElementById('ratingEditorModal');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        toggleRatingEditor();
+      }
+    });
+  }
 </script>
