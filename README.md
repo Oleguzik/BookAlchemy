@@ -22,6 +22,9 @@ A beginner-friendly Flask web application for managing your personal book librar
 - **Author Stats** - See count of total authors and books in your library
 - **Scope-Based Search** - Search within "Books" or "Authors" scopes
 - **Smart Delete Confirmation** - Two-step confirmation when deleting an author's last book
+- **Book Detail Pages** - Click any book title to view detailed information including ISBN, publication year, cover image, and author biography
+- **Author Detail Pages** - Click any author name to view their profile with all books they've written, birth/death dates, and book statistics
+- **Cross-Navigation** - Seamlessly navigate between book and author detail pages
 
 ## Technology Stack
 
@@ -114,12 +117,37 @@ Navigate to "Add Book" to add a new book to your library.
 - **Publication Year** (optional) - Year the book was published
 - **Cover URL** (optional) - Direct link to book cover image
 
-### 🔍 Search
+### 📖 Book Detail Page
 
-Use the global search bar at the top to find books or authors:
-- **Default scope**: Searches by title, ISBN, and author name
-- **Author scope**: Search only by author names
-- Matching text is highlighted in the results
+Click on any **book title** from the home page to view the complete book details:
+
+**Information displayed:**
+- Book cover image (if available)
+- Full book metadata (ISBN, publication year, title)
+- Author information with link to author profile
+- List of other books by the same author
+- Edit and delete options
+
+**Navigation:**
+- Click author name to view author profile
+- Click other books to view their details
+- "Back to Library" button to return to home
+
+### 👤 Author Detail Page
+
+Click on any **author name** from the home page or book detail page to view the author's profile:
+
+**Information displayed:**
+- Author name and biography (birth/death dates)
+- Total number of books in library
+- Grid layout of all books by this author
+- Book covers and metadata for each book
+- Edit and delete buttons for each book
+
+**Navigation:**
+- Click book titles to view book details
+- View complete author statistics
+- Add new books by this author
 
 ### 🗑️ Delete a Book
 
@@ -187,7 +215,9 @@ BookAlchemy/
 │   └── styles.css          # Application styling (beginner-friendly)
 ├── templates/
 │   ├── base.html           # Base template with header/footer
-│   ├── home.html           # Main library view
+│   ├── home.html           # Main library view with books/authors list
+│   ├── book_detail.html    # Detailed book information page
+│   ├── author_detail.html  # Author profile with all their books
 │   ├── add_author.html     # Author creation form
 │   ├── add_book.html       # Book creation form
 │   ├── confirm_delete_book.html  # Delete confirmation page
@@ -292,6 +322,37 @@ The codebase is written to be beginner-friendly with:
 - Organized function structure
 - Consistent indentation
 
+## API Routes Reference
+
+### Public Routes
+- `GET /` - Home page with all books/authors
+- `GET /book/<id>` - Book detail page
+- `GET /author/<id>` - Author detail page
+- `GET /add_author` - Add author form
+- `GET /add_book` - Add book form
+- `POST /add_author` - Submit new author
+- `POST /add_book` - Submit new book
+- `POST /book/<id>/delete` - Delete book (with author check)
+- `GET /book/<id>/confirm_delete` - Delete confirmation page
+- `POST /book/<id>/confirm_delete` - Confirm book deletion
+
+### Admin Routes
+- `GET /admin` - Admin test interface
+- `POST /admin/delete_author/<id>` - Admin delete author
+- `POST /admin/delete_book/<id>` - Admin delete book
+
+## Frontend-Backend Communication
+
+The application uses RESTful principles:
+- **GET requests** - Retrieve and display data
+- **POST requests** - Submit forms (add/delete operations)
+- **Query parameters** - Preserve state (sort, order, search)
+- **Redirects** - Maintain user context after operations
+- **Jinja2 templating** - Dynamic HTML generation with database data
+- **Form highlighting** - Search results highlight matching text
+
+For detailed communication patterns, see `FRONTEND_BACKEND_COMMUNICATION.md`
+
 ## Future Enhancements
 
 Potential features for expansion:
@@ -301,6 +362,8 @@ Potential features for expansion:
 - Book recommendations
 - Export/import functionality
 - Advanced filtering options
+- Reading progress tracking
+- Book notes and annotations
 
 ## License
 
