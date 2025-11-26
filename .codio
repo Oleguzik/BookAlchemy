@@ -1,0 +1,8 @@
+{
+  "preview": {
+    "Project Index (static)": "https://{{domain5002}}/",
+    "Current File (static)": "https://{{domain5002}}/{{filepath}}",
+    "Box URL": "https://{{domain5002}}/"
+  },
+  "debugger": []
+}

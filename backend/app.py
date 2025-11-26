@@ -557,4 +557,5 @@ app = create_app()
 
 
 if __name__ == '__main__':
-    app.run(port=5002, debug=True)
+    # Bind to 0.0.0.0 for Codio deployment (makes app accessible externally)
+    app.run(host='0.0.0.0', port=5002, debug=True)
