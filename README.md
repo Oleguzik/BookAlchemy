@@ -10,10 +10,22 @@ A beginner-friendly Flask web application for managing your personal book librar
 - **Add Authors** - Create author profiles with birth date and death date information
 - **Add Books** - Add books to your library with ISBN, title, publication year, and cover image URL
 - **Search** - Search books by title, ISBN, or author name
-- **Sort** - Sort books by title or author in ascending/descending order
+- **Sort** - Sort books by title, author, or rating in ascending/descending order
 - **Cover Images** - Display book cover images from provided URLs or Open Library service
 - **Delete Books** - Remove books from your library with confirmation dialog
 - **Smart Author Deletion** - When deleting an author's last book, choose whether to keep or delete the author
+
+### ⭐ Book Ratings Features
+
+- **Rate Books** - Add a 1-10 star rating to any book in your library
+- **Quick Rating Modal** - Fast-access rating interface from the home page
+- **Real-Time Star Display** - Visual star feedback as you adjust the rating slider
+- **Rating Persistence** - Ratings are saved to the database and displayed consistently
+- **Edit Ratings** - Change existing ratings anytime with the "Re-rate" button
+- **Rating Sort** - Sort your library by book ratings (highest or lowest first)
+- **Rating Display** - View ratings as filled/empty stars (★/☆) with numeric score (e.g., 7/10)
+- **Rate on Home Page** - Use green "Rate" button for quick rating without leaving the list
+- **Rate on Book Detail** - Use blue "Edit" or green "Add Rating" button on individual book pages
 
 ### 🎯 Advanced Features
 
@@ -22,11 +34,12 @@ A beginner-friendly Flask web application for managing your personal book librar
 - **Author Stats** - See count of total authors and books in your library
 - **Scope-Based Search** - Search within "Books" or "Authors" scopes
 - **Smart Delete Confirmation** - Two-step confirmation when deleting an author's last book
-- **Book Detail Pages** - Click any book title to view detailed information including ISBN, publication year, cover image, and author biography
+- **Book Detail Pages** - Click any book title to view detailed information including ISBN, publication year, cover image, author biography, and rating
 - **Author Detail Pages** - Click any author name to view their profile with all books they've written, birth/death dates, and book statistics
 - **Cross-Navigation** - Seamlessly navigate between book and author detail pages
 - **Cascade Delete Author** - Delete an author and automatically remove all their books with a single operation
 - **Protected Author Deletion** - Confirmation dialogs warn about cascade effects before deletion
+- **Click-Through Navigation** - Click "BookAlchemy" header anytime to return to the main library page
 
 ## Technology Stack
 
@@ -89,13 +102,44 @@ This will:
 The main page displays all books in your library with:
 - Book covers (if available)
 - Book title and author
-- Sort controls for title and author
+- **Book ratings** displayed as filled/empty stars (★/☆) with numeric score
+- Sort controls for title, author, and **rating**
 - Global search bar
 
 **Actions:**
-- Click "Title" or "Author" headers to sort
+- Click "Title", "Author", or "Rating" headers to sort
 - Use the search bar to find books
+- Click green "Rate" button to rate a book
 - Click "Delete" button to remove a book from your library
+
+### ⭐ Rate a Book - From Home Page
+
+Click the green **"Rate"** or orange **"Re-rate"** button to quickly rate a book:
+
+1. A modal dialog appears with a rating slider
+2. Move the slider from 1-10 to set your rating
+3. See the stars update in real-time (filled ★ for your rating, empty ☆ for remaining)
+4. Click "Save Rating" to store your rating
+5. Click "Cancel" or outside the modal to close without saving
+
+**Rating Display:**
+- Unrated books show: *"Not rated"* (gray text)
+- Rated books show: `★★★★★☆☆☆☆☆ 5/10` format
+
+### ⭐ Rate a Book - From Book Detail Page
+
+On any book's detail page, you can add or edit a rating:
+
+1. Click blue **"Edit"** button (if already rated) or green **"Add Rating"** button (if not yet rated)
+2. The rating modal opens with a slider
+3. Adjust the slider to your desired rating (1-10)
+4. Stars and numeric display update as you move the slider
+5. Click "Save Rating" to confirm your rating
+
+**Rating Information:**
+- Ratings persist across the application
+- You can change a rating anytime by clicking the "Edit" button
+- Rating changes are immediate and saved to the database
 
 ### ➕ Add Author
 
@@ -223,6 +267,7 @@ title (String, Required)
 publication_year (Integer, Optional)
 cover_url (String, Optional)
 author_id (Integer, Foreign Key to Author)
+rating (Integer, Optional, Range: 1-10)
 ```
 
 ## Testing
@@ -381,6 +426,7 @@ The codebase is written to be beginner-friendly with:
 - `GET /add_book` - Add book form
 - `POST /add_author` - Submit new author
 - `POST /add_book` - Submit new book
+- `POST /book/<id>/rate` - Submit book rating (1-10)
 - `POST /book/<id>/delete` - Delete book (with author check)
 - `POST /author/<id>/delete` - Delete author and all their books (cascade deletion)
 - `GET /book/<id>/confirm_delete` - Delete confirmation page

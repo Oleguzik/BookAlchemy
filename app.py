@@ -122,6 +122,12 @@ def create_app(config_overrides=None):
 				query = query.order_by(Author.name.desc())
 			else:
 				query = query.order_by(Author.name)
+		elif sort_by == 'rating':
+			# Order by rating (nulls last for 'not rated' books)
+			if order == 'desc':
+				query = query.order_by(Book.rating.desc())
+			else:
+				query = query.order_by(Book.rating)
 		else:
 			# default to ordering by title
 			if order == 'desc':

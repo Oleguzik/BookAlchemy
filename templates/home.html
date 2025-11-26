@@ -17,6 +17,7 @@
         <div style="display:flex; gap:24px; align-items:center; margin-bottom:8px;">
           <a href="{{ url_for('home', sort='title', order=('desc' if sort_by == 'title' and order == 'asc' else 'asc'), q=q, scope=scope) }}" style="text-decoration:none; font-weight:bold;"><i class="fa fa-book"></i> Title {% if sort_by == 'title' %}{% if order=='asc' %}<i class="fa fa-arrow-up"></i>{% else %}<i class="fa fa-arrow-down"></i>{% endif %}{% endif %}</a>
           <a href="{{ url_for('home', sort='author', order=('desc' if sort_by == 'author' and order == 'asc' else 'asc'), q=q, scope=scope) }}" style="text-decoration:none; font-weight:bold;"><i class="fa fa-user"></i> Author {% if sort_by == 'author' %}{% if order=='asc' %}<i class="fa fa-arrow-up"></i>{% else %}<i class="fa fa-arrow-down"></i>{% endif %}{% endif %}</a>
+          <a href="{{ url_for('home', sort='rating', order=('desc' if sort_by == 'rating' and order == 'asc' else 'asc'), q=q, scope=scope) }}" style="text-decoration:none; font-weight:bold;"><i class="fa fa-star"></i> Rating {% if sort_by == 'rating' %}{% if order=='asc' %}<i class="fa fa-arrow-up"></i>{% else %}<i class="fa fa-arrow-down"></i>{% endif %}{% endif %}</a>
         </div>
         {% if q and scope == 'authors' and authors_search|length == 0 %}
           <p class="meta" style="color:#a00">No books found for "{{ q }}"</p>
@@ -72,12 +73,9 @@
       </div>
       <div style="margin-left:auto; display:flex; gap:8px; flex-wrap: wrap;">
         {% if book.rating %}
-        <form method="POST" action="{{ url_for('rate_book', book_id=book.id) }}" style="display:inline;">
-          <input type="hidden" name="rating" value="">
-          <button type="button" class="btn" style="background-color:#FF9800; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;" onclick="openRatingQuick({{ book.id }})"><i class="fa fa-edit"></i> Re-rate</button>
-        </form>
+        <button type="button" class="btn rate-button" style="background-color:#FF9800; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;" data-book-id="{{ book.id }}"><i class="fa fa-edit"></i> Re-rate</button>
         {% else %}
-        <button type="button" class="btn" style="background-color:#4CAF50; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;" onclick="openRatingQuick({{ book.id }})"><i class="fa fa-star"></i> Rate</button>
+        <button type="button" class="btn rate-button" style="background-color:#4CAF50; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;" data-book-id="{{ book.id }}"><i class="fa fa-star"></i> Rate</button>
         {% endif %}
         <form method="POST" action="{{ url_for('delete_book', book_id=book.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this book?');">
           <button type="submit" class="btn btn-danger" style="background-color:#d9534f; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;"><i class="fa fa-trash"></i> Delete</button>
@@ -100,7 +98,6 @@
       </div>
     </aside>
 </div>
-{% endblock %}
 
 <!-- Quick Rating Modal -->
 <div id="quickRatingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
@@ -139,9 +136,15 @@
     form.action = '/book/' + bookId + '/rate';
     modal.style.display = 'flex';
     
+    // Reset slider to 5 and update display
+    const slider = document.getElementById('quick_rating_slider');
+    slider.value = 5;
+    document.getElementById('quick_rating_display').textContent = '5';
+    document.getElementById('quick_rating_stars').innerHTML = '★★★★★☆☆☆☆☆';
+    
     // Focus on the slider
     setTimeout(() => {
-      document.getElementById('quick_rating_slider').focus();
+      slider.focus();
     }, 100);
   }
 
@@ -170,7 +173,17 @@
       }
     });
   }
+
+  // Attach event listeners to all rate buttons after DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    const rateButtons = document.querySelectorAll('.rate-button');
+    rateButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const bookId = this.dataset.bookId;
+        openRatingQuick(bookId);
+      });
+    });
+  });
 </script>
 
-  </body>
-</html>
+{% endblock %}
