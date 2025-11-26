@@ -25,6 +25,8 @@ A beginner-friendly Flask web application for managing your personal book librar
 - **Book Detail Pages** - Click any book title to view detailed information including ISBN, publication year, cover image, and author biography
 - **Author Detail Pages** - Click any author name to view their profile with all books they've written, birth/death dates, and book statistics
 - **Cross-Navigation** - Seamlessly navigate between book and author detail pages
+- **Cascade Delete Author** - Delete an author and automatically remove all their books with a single operation
+- **Protected Author Deletion** - Confirmation dialogs warn about cascade effects before deletion
 
 ## Technology Stack
 
@@ -160,6 +162,49 @@ Click the red "Delete" button next to any book to remove it:
    - **Keep author** - Delete book only, author stays in database
    - **Delete author too** - Remove both book and author permanently
 
+### 🗑️ Delete an Author
+
+Delete an author and **all their books** in one operation using the red "Delete Author & Books" button:
+
+**Where to find the delete button:**
+- On the **Home Page** - In the author search results section next to each author name
+- On the **Author Detail Page** - Prominent red button at the bottom of the author profile
+
+**Cascade Deletion Behavior:**
+When you delete an author, the application automatically:
+1. Identifies all books by that author
+2. Deletes all books associated with the author
+3. Removes the author from the database
+4. Shows a flash message confirming deletion
+
+**Example:**
+```
+Deleting "J.K. Rowling" will automatically delete:
+- Harry Potter and the Philosopher's Stone
+- Harry Potter and the Chamber of Secrets
+- Harry Potter and the Prisoner of Azkaban
+- ... and all other books by this author
+```
+
+**Confirmation Dialog:**
+Before deletion, a warning dialog appears showing:
+- Author name
+- ⚠️  Warning symbol
+- Exact count of books to be deleted
+- Clear notice that the action cannot be undone
+
+**Example warning:**
+```
+⚠️  DANGER: Delete "Stephen King" AND ALL 47 book(s)?
+
+This action cannot be undone!
+```
+
+**After Deletion:**
+- Success message displays: `"Author 'Author Name' and all their books have been deleted successfully."`
+- Redirects automatically to the home page
+- All books by that author are removed from your library
+
 ## Database Schema
 
 ### Author Table
@@ -190,6 +235,7 @@ pytest tests/ -v
 
 # Run specific test file
 pytest tests/test_delete_book.py -v
+pytest tests/test_delete_author.py -v
 
 # Run with coverage
 pytest tests/ --cov
@@ -198,9 +244,11 @@ pytest tests/ --cov
 **Test Coverage:**
 - Admin UI functionality
 - Delete book operations
+- Delete author operations (with cascade deletion)
 - Author/Book searches
 - Cover image display
 - Author-book relationships
+- Cascade deletion integrity
 
 ## Project Structure
 
@@ -229,7 +277,8 @@ BookAlchemy/
 └── tests/
     ├── test_admin_ui.py
     ├── test_search.py
-    └── test_delete_book.py
+    ├── test_delete_book.py
+    └── test_delete_author.py   # New: Cascade deletion tests
 ```
 
 ## Configuration
@@ -333,6 +382,7 @@ The codebase is written to be beginner-friendly with:
 - `POST /add_author` - Submit new author
 - `POST /add_book` - Submit new book
 - `POST /book/<id>/delete` - Delete book (with author check)
+- `POST /author/<id>/delete` - Delete author and all their books (cascade deletion)
 - `GET /book/<id>/confirm_delete` - Delete confirmation page
 - `POST /book/<id>/confirm_delete` - Confirm book deletion
 
