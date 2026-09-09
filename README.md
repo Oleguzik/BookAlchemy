@@ -30,6 +30,8 @@ python run.py                    # http://127.0.0.1:5000
 
 Or run `bash bin/setup.sh` to do all of the above in one step.
 
+Look for details in rubook.md
+
 ## Tests
 
 ```bash
